@@ -1,0 +1,14 @@
+{
+  "main": "dist/index.js",
+  "dependencies": {
+    "@actions/core": "^1.1.1",
+    "@actions/exec": "^1.0.3",
+    "lib": "file:../lib"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.20.5"
+  },
+  "scripts": {
+    "build": "ncc build index.js -o dist"
+  }
+}

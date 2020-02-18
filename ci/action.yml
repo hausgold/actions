@@ -1,0 +1,18 @@
+name: Continuous Integration Preparation
+description: Setup the virtual environment we run in
+inputs:
+  settings:
+    description: The name of the application to fetch settings for
+    required: false
+  target:
+    description: The name of the target to run
+    required: true
+  clone_token:
+    description: The Github token to use for cloning
+    required: true
+branding:
+  icon: 'check-circle'
+  color: 'green'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

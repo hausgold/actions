@@ -1,0 +1,15 @@
+name: Potpourri Trampoline
+description: Run scripts from Potpourri
+inputs:
+  target:
+    description: The name the target to run
+    required: true
+  clone_token:
+    description: The Github token to use for cloning
+    required: true
+branding:
+  icon: 'terminal'
+  color: 'green'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

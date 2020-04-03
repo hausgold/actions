@@ -28,7 +28,7 @@ steps:
   - name: Prepare the virtual environment
     uses: hausgold/actions/ci@master
     with:
-      clone_token: '${{ secrets.GITHUB_CLONE_TOKEN }}'
+      clone_token: '${{ secrets.CLONE_TOKEN }}'
       settings: '${{ github.event.repository.name }}'
       target: ci/sd-deploy
 ```
@@ -44,7 +44,7 @@ on multiple jobs.
 This action allows you to fetch the application settings from our
 [Knowledge](https://github.com/hausgold/knowledge) repository by specifing the
 application name and the Github clone token. Make sure your application
-repository have set the `GITHUB_CLONE_TOKEN` secret correctly. Afterwards you
+repository have set the `CLONE_TOKEN` secret correctly. Afterwards you
 can access all settings via regular environment variables.
 
 ```yaml
@@ -52,7 +52,7 @@ steps:
   - name: Fetch all application settings from knowledge
     uses: hausgold/actions/knowledge@master
     with:
-      clone_token: '${{ secrets.GITHUB_CLONE_TOKEN }}'
+      clone_token: '${{ secrets.CLONE_TOKEN }}'
       app: '${{ github.event.repository.name }}'
 ```
 
@@ -69,6 +69,6 @@ steps:
   - name: Prepare the virtual environment
     uses: hausgold/actions/potpourri@master
     with:
-      clone_token: '${{ secrets.GITHUB_CLONE_TOKEN }}'
+      clone_token: '${{ secrets.CLONE_TOKEN }}'
       target: ci/sd-deploy
 ```

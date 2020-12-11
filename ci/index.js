@@ -2,9 +2,6 @@ const lib = require('lib');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 
-// Enable unsecure commands for now
-lib.exportVariable('ACTIONS_ALLOW_UNSECURE_COMMANDS', 'true');
-
 const settings = core.getInput('settings');
 const target = core.getInput('target', { required: true });
 const token = core.getInput('clone_token', { required: true });

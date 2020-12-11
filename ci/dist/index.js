@@ -948,6 +948,9 @@ const lib = __webpack_require__(490);
 const core = __webpack_require__(470);
 const exec = __webpack_require__(986);
 
+// Enable unsecure commands for now
+lib.exportVariable('ACTIONS_ALLOW_UNSECURE_COMMANDS', 'true');
+
 const settings = core.getInput('settings');
 const target = core.getInput('target', { required: true });
 const token = core.getInput('clone_token', { required: true });
@@ -1406,6 +1409,9 @@ const exportVariable = (key, val) => {
   merge[key] = val;
   fs.writeFileSync(runtimeEnvPath, JSON.stringify(runtimeEnv(merge)));
 };
+
+// Enable unsecure commands for now
+exportVariable('ACTIONS_ALLOW_UNSECURE_COMMANDS', 'true');
 
 exports.runtimeEnv = runtimeEnv;
 exports.exportVariable = exportVariable;

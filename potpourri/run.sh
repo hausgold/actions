@@ -38,6 +38,17 @@ if [ ! -d "${DEST}" ]; then
     # Run the export environment variable helper to export the settings
     make -C "${DEST}" --no-print-directory build-actions
   ) &> /dev/null
+else
+  # We're running on a cached version of Potpourri, so we should check for
+  # updates and where there are some, we rebuild the scripts accordingly
+  mkdir -p "${DEST}/hooks"
+  cat >"${DEST}/hooks/post-update" <<EOF
+#!/bin/bash
+echo 'Rebuild the potpourri cache after update..'
+make build-actions
+EOF
+  chmod +x "${DEST}/hooks/post-update"
+  git -C "${DEST}" pull
 fi
 
 # Run the target command

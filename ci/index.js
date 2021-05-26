@@ -13,7 +13,7 @@ process.env['INPUT_CLONE_TOKEN'] = token;
   // Run the knowledge action if we should
   if (settings) {
     await core.group(
-      'Fetch all application settings from knowledge',
+      `Fetch all application settings from knowledge for ${settings}`,
       () => {
         process.env['INPUT_APP'] = settings;
         return exec.exec('node', [
@@ -24,7 +24,7 @@ process.env['INPUT_CLONE_TOKEN'] = token;
   }
 
   // Run the potpourri action
-  await core.group(`Provision a Potpourri target (${target})`, async () => {
+  await core.group(`Provision Potpourri ${target} target`, async () => {
     process.env['INPUT_TARGET'] = target;
     return exec.exec('node', [
       `${__dirname}/../../potpourri/dist/index.js`

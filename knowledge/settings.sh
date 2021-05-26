@@ -37,9 +37,19 @@ DEST='/tmp/knowledge'
 !/*
 /.travis/
 /infrastructure/apps/
+/infrastructure/user/deployhausgold/id*
 /Makefile
 EOF
   git -C "${DEST}" checkout master
+) &> /dev/null
+
+# Install the machine user SSH key for further organization access
+(
+  mkdir -p ${HOME}/.ssh
+  cp "${DEST}/infrastructure/user/deployhausgold"/id* \
+    ${HOME}/.ssh/
+  chmod 0600 ${HOME}/.ssh/id_rsa
+  chmod 0644 ${HOME}/.ssh/id_rsa.pub
 ) &> /dev/null
 
 # Run the export environment variable helper to export the settings

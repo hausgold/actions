@@ -1045,7 +1045,7 @@ process.env['INPUT_CLONE_TOKEN'] = token;
   }
 
   // Run the potpourri action
-  await core.group('Run a Potpourri script', async () => {
+  await core.group(`Provision a Potpourri target (${target})`, async () => {
     process.env['INPUT_TARGET'] = target;
     return exec.exec('node', [
       `${__dirname}/../../potpourri/dist/index.js`

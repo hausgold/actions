@@ -53,5 +53,7 @@ EOF
 ) &> /dev/null
 
 # Run the export environment variable helper to export the settings
-make -C "${DEST}" --no-print-directory "export-envs-${APP}" \
-  | cut -d' ' -f2-
+make -C "${DEST}" --no-print-directory \
+  export-envs-github-actions-commons \
+  "export-envs-${APP}" \
+    | cut -d' ' -f2-

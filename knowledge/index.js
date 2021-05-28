@@ -26,6 +26,9 @@ exec.exec('bash', [`${__dirname}/../settings.sh`, app, token], {
     return memo;
   }, {});
 
+  // Add clone token to the environment potpourri tooling
+  env['CLONE_TOKEN'] = token;
+
   // Register all environment variables and register secrets for masking
   for (let [key, val] of Object.entries(env)) {
     lib.exportVariable(key, val);

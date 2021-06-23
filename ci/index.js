@@ -2,7 +2,7 @@ const lib = require('lib');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 
-const settings = core.getInput('settings');
+const settings = core.getInput('settings').split('/').slice(-1)[0];
 const target = core.getInput('target', { required: true });
 const token = core.getInput('clone_token', { required: true });
 

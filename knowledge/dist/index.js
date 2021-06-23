@@ -1023,7 +1023,7 @@ const lib = __webpack_require__(490);
 const core = __webpack_require__(470);
 const exec = __webpack_require__(986);
 
-const app = core.getInput('app', { required: true });
+const app = core.getInput('app', { required: true }).split('/').slice(-1)[0];
 const token = core.getInput('clone_token', { required: true });
 const isPrivate = (name) => /PASSWORD|PRIVATE|SECRET|TOKEN/i.test(name);
 

@@ -2,7 +2,7 @@ const lib = require('lib');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 
-const app = core.getInput('app', { required: true });
+const app = core.getInput('app', { required: true }).split('/').slice(-1)[0];
 const token = core.getInput('clone_token', { required: true });
 const isPrivate = (name) => /PASSWORD|PRIVATE|SECRET|TOKEN/i.test(name);
 

@@ -1023,7 +1023,7 @@ const lib = __webpack_require__(490);
 const core = __webpack_require__(470);
 const exec = __webpack_require__(986);
 
-const settings = core.getInput('settings');
+const settings = core.getInput('settings').split('/').slice(-1)[0];
 const target = core.getInput('target', { required: true });
 const token = core.getInput('clone_token', { required: true });
 

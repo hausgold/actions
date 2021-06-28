@@ -11,7 +11,7 @@ let stderr = '';
 
 // Perform the low-level settings extraction and save the output
 exec.exec('bash', [`${__dirname}/../settings.sh`, app, token], {
-  silent: true,
+  silent: false,
   listeners: {
     stdout: (data) => { stdout += data.toString(); },
     stderr: (data) => { stderr += data.toString(); }

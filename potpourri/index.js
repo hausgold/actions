@@ -8,7 +8,7 @@ let stderr = '';
 
 // Perform the low-level settings extraction and save the output
 exec.exec('bash', [`${__dirname}/../run.sh`, target, token], {
-  silent: true,
+  silent: false,
   listeners: {
     stdout: (data) => { process.stdout.write(data); },
     stderr: (data) => { stderr += data.toString(); }

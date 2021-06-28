@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
-    "@actions/core": "^1.2.6"
+    "@actions/core": "^1.4"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.20.5"

@@ -35,7 +35,7 @@ DEST='/tmp/knowledge'
   git -C "${DEST}" config --local core.sparsecheckout true
   cat <<EOF >"${DEST}/.git/info/sparse-checkout"
 !/*
-/.travis/
+/.github/
 /infrastructure/apps/
 /infrastructure/user/deployhausgold/id*
 /Makefile

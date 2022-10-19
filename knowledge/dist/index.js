@@ -1050,7 +1050,7 @@ exec.exec('bash', [`${__dirname}/../settings.sh`, app, token], {
   // Register all environment variables and register secrets for masking
   for (let [key, val] of Object.entries(env)) {
     lib.exportVariable(key, val);
-    if (isPrivate(key)) {
+    if (isPrivate(key) && val != '') {
       core.setSecret(val);
     }
     core.info(`exported environment variable: ${key}=${val}`)

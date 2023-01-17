@@ -42,15 +42,15 @@ on multiple jobs.
 ### Fetch application settings
 
 This action allows you to fetch the application settings from our
-[Knowledge](https://github.com/hausgold/knowledge) repository by specifing the
+[Settings](https://github.com/hausgold/settings) repository by specifing the
 application name and the Github clone token. Make sure your application
 repository have set the `CLONE_TOKEN` secret correctly. Afterwards you
 can access all settings via regular environment variables.
 
 ```yaml
 steps:
-  - name: Fetch all application settings from knowledge
-    uses: hausgold/actions/knowledge@master
+  - name: Fetch all application settings
+    uses: hausgold/actions/settings@master
     with:
       clone_token: '${{ secrets.CLONE_TOKEN }}'
       app: '${{ github.event.repository.name }}'

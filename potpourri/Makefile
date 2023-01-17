@@ -34,7 +34,7 @@ WC ?= wc
 XARGS ?= xargs
 
 all:
-	# Knowledge
+	# Potpourri
 	#
 	# install         Install the dependencies
 	# build           Build all distribution files

@@ -1,5 +1,5 @@
-name: Knowledge Applications Settings Exporter
-description: Fetch all application settings from knowledge
+name: Applications Settings Exporter
+description: Fetch all application settings
 inputs:
   app:
     description: The name of the application to fetch settings for

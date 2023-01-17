@@ -23,7 +23,7 @@ DEST='/tmp/potpourri'
 
 # Just clone and build it once and use the cache on subsequent calls
 if [ ! -d "${DEST}" ]; then
-  # Fetch the knowledge repository (some day Github may
+  # Fetch the potpourri repository (some day Github may
   # allows server-side filtering)
   (
     git clone \

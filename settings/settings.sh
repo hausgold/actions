@@ -18,10 +18,10 @@ fi
 
 # Common settings
 APP="${1}"
-GIT_URL="https://${2}@github.com/hausgold/knowledge.git"
-DEST='/tmp/knowledge'
+GIT_URL="https://${2}@github.com/hausgold/settings.git"
+DEST='/tmp/settings'
 
-# Fetch the knowledge repository (some day Github may
+# Fetch the settings repository (some day Github may
 # allows server-side filtering)
 (
   rm -rf "${DEST}"
@@ -36,8 +36,8 @@ DEST='/tmp/knowledge'
   cat <<EOF >"${DEST}/.git/info/sparse-checkout"
 !/*
 /.github/
-/infrastructure/apps/
-/infrastructure/user/deployhausgold/id*
+/apps/
+/user/deployhausgold/id*
 /Makefile
 EOF
   git -C "${DEST}" checkout master
@@ -46,7 +46,7 @@ EOF
 # Install the machine user SSH key for further organization access
 (
   mkdir -p ${HOME}/.ssh
-  cp "${DEST}/infrastructure/user/deployhausgold"/id* \
+  cp "${DEST}/user/deployhausgold"/id* \
     ${HOME}/.ssh/
   chmod 0600 ${HOME}/.ssh/id_rsa
   chmod 0644 ${HOME}/.ssh/id_rsa.pub

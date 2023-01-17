@@ -1031,14 +1031,14 @@ const token = core.getInput('clone_token', { required: true });
 process.env['INPUT_CLONE_TOKEN'] = token;
 
 (async function() {
-  // Run the knowledge action if we should
+  // Run the settings action if we should
   if (settings) {
     await core.group(
-      `Fetch all application settings from knowledge for ${settings}`,
+      `Fetch all application settings for ${settings}`,
       () => {
         process.env['INPUT_APP'] = settings;
         return exec.exec('node', [
-          `${__dirname}/../../knowledge/dist/index.js`
+          `${__dirname}/../../settings/dist/index.js`
         ], { env: lib.runtimeEnv() }).catch(() => process.exit(1));
       }
     );

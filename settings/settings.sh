@@ -50,6 +50,10 @@ EOF
     ${HOME}/.ssh/
   chmod 0600 ${HOME}/.ssh/id_rsa
   chmod 0644 ${HOME}/.ssh/id_rsa.pub
+  cat >>${HOME}/.ssh/config <<EOF
+Host github.com
+  StrictHostKeyChecking no
+EOF
 ) &> /dev/null
 
 # Run the export environment variable helper to export the settings

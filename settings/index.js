@@ -4,7 +4,13 @@ const exec = require('@actions/exec');
 
 const app = core.getInput('app', { required: true }).split('/').slice(-1)[0];
 const token = core.getInput('clone_token', { required: true });
-const isPrivate = (name) => /PASSWORD|PRIVATE|SECRET|TOKEN/i.test(name);
+
+const filterList = [
+  'API_KEY', 'CREDENTIAL', 'ENCRYPTION', 'ghp_', 'PASSWORD',
+  'PRIVATE', 'SECRET', 'TOKEN'
+];
+const filterPattern = new RegExp(filterList.join('|'), 'i');
+const isPrivate = (name) => filterPattern.test(name);
 
 let stdout = '';
 let stderr = '';

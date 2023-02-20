@@ -11,7 +11,7 @@ CD ?= cd
 NPM ?= npm
 
 # Dynamic recipe names
-NON_ACTIONS ?= lib doc
+NON_ACTIONS ?= doc
 ACTIONS ?= $(filter-out $(NON_ACTIONS),$(patsubst %/,%,\
 	$(patsubst ./%,%,$(sort $(dir $(wildcard ./*/*))))))
 ALL_ACTIONS ?= $(ACTIONS) lib
@@ -33,7 +33,7 @@ $(INSTALL_ACTIONS):
 	@$(MAKE) -C $(ACTION) install
 
 $(BUILD_ACTIONS): ACTION = $(@:build-%=%)
-$(BUILD_ACTIONS):
+$(BUILD_ACTIONS): build-lib
 	@$(MAKE) -C $(ACTION) build
 
 $(CLEAN_ACTIONS): ACTION = $(@:clean-%=%)

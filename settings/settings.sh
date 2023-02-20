@@ -35,7 +35,7 @@ DEST='/tmp/settings'
   git -C "${DEST}" config --local core.sparsecheckout true
   cat <<EOF >"${DEST}/.git/info/sparse-checkout"
 !/*
-/.github/
+/exe/
 /apps/
 /user/deployhausgold/id*
 /Makefile

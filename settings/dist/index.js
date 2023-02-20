@@ -6948,7 +6948,7 @@ const token = core.getInput('clone_token', { required: true });
 
 const filterList = [
   'API_KEY', 'CREDENTIAL', 'ENCRYPTION', 'ghp_', 'PASSWORD',
-  'PRIVATE', 'SECRET', 'TOKEN'
+  'PRIVATE', 'SECRET', 'TOKEN', 'CERTIFICATE'
 ];
 const filterPattern = new RegExp(filterList.join('|'), 'i');
 const isPrivate = (name) => filterPattern.test(name);

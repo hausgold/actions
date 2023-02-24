@@ -21,6 +21,12 @@ APP="${1}"
 GIT_URL="https://${2}@github.com/hausgold/settings.git"
 DEST='/tmp/settings'
 
+# Make sure to drop cloned settings in order to prevent unauthorized access to
+# other sensible/secret data/information. Custom user defined actions, later in
+# the Github Action workflow are prevented to access these information.
+function cleanup() { rm -rf "${DEST}"; }
+trap cleanup EXIT
+
 # Fetch the settings repository (some day Github may
 # allows server-side filtering)
 (
@@ -50,6 +56,8 @@ EOF
     ${HOME}/.ssh/
   chmod 0600 ${HOME}/.ssh/id_rsa
   chmod 0644 ${HOME}/.ssh/id_rsa.pub
+  git config --global user.email 'deploy@hausgold.de'
+  git config --global user.name 'deployhausgold'
   cat >>${HOME}/.ssh/config <<EOF
 Host github.com
   StrictHostKeyChecking no

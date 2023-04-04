@@ -10,6 +10,10 @@ inputs:
   clone_token:
     description: The Github token to use for cloning
     required: true
+  settings_secret_key:
+    description: When settings should be loaded,
+      we require the secret key for decryption
+    required: false
 branding:
   icon: 'check-circle'
   color: 'green'

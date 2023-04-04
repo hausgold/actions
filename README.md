@@ -29,6 +29,7 @@ steps:
     uses: hausgold/actions/ci@master
     with:
       clone_token: '${{ secrets.CLONE_TOKEN }}'
+      settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
       settings: '${{ github.event.repository.name }}'
       target: ci/sd-deploy
 ```
@@ -53,6 +54,7 @@ steps:
     uses: hausgold/actions/settings@master
     with:
       clone_token: '${{ secrets.CLONE_TOKEN }}'
+      secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
       app: '${{ github.event.repository.name }}'
 ```
 

@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # $1 - application name
-# $2 - Github token to use
+#
+# The +CLONE_TOKEN+ and +SECRET_KEY+ environment variables must be present.
 
 # Die on any errors
 set -e
@@ -9,17 +10,23 @@ set -e
 if [ -z "${1}" ]; then
   echo 'Application name ($1) is missing.'
   exit 1
+else
+  APP="${1}"
 fi
 
-if [ -z "${2}" ]; then
-  echo 'Github clone token ($1) is missing.'
+if [ -z "${CLONE_TOKEN}" ]; then
+  echo 'The `CLONE_TOKEN` environment variable is missing.'
+  exit 1
+fi
+
+if [ -z "${SECRET_KEY}" ]; then
+  echo 'The `SECRET_KEY` environment variable is missing.'
   exit 1
 fi
 
 # Common settings
-APP="${1}"
-GIT_URL="https://${2}@github.com/hausgold/settings.git"
-DEST='/tmp/settings'
+GIT_URL="https://${CLONE_TOKEN}@github.com/hausgold/settings.git"
+DEST="$(mktemp -d)"
 
 # Make sure to drop cloned settings in order to prevent unauthorized access to
 # other sensible/secret data/information. Custom user defined actions, later in
@@ -42,7 +49,8 @@ trap cleanup EXIT
   cat <<EOF >"${DEST}/.git/info/sparse-checkout"
 !/*
 /exe/
-/apps/
+/apps/github-actions-commons.md*
+/apps/${APP}.md*
 /user/deployhausgold/id*
 /Makefile
 EOF
@@ -65,7 +73,8 @@ EOF
 ) &> /dev/null
 
 # Run the export environment variable helper to export the settings
-make -C "${DEST}" --no-print-directory \
-  export-envs-github-actions-commons \
-  "export-envs-${APP}" \
-    | cut -d' ' -f2-
+SETTINGS_SECRET_KEY="${SECRET_KEY}" \
+  make -C "${DEST}" --no-print-directory \
+    export-envs-github-actions-commons \
+    "export-envs-${APP}" \
+      | cut -d' ' -f2-

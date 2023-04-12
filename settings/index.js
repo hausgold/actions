@@ -4,6 +4,7 @@ const exec = require('@actions/exec');
 
 const app = core.getInput('app', { required: true }).split('/').slice(-1)[0];
 const token = core.getInput('clone_token', { required: true });
+const secret_key = core.getInput('secret_key', { required: true });
 
 const filterList = [
   'API_KEY', 'CREDENTIAL', 'ENCRYPTION', 'ghp_', 'PASSWORD',
@@ -15,8 +16,13 @@ const isPrivate = (name) => filterPattern.test(name);
 let stdout = '';
 let stderr = '';
 
+// Export some environment variables for the +settings.sh+ script, they are
+// private to this process children
+process.env.CLONE_TOKEN = token;
+process.env.SECRET_KEY = secret_key;
+
 // Perform the low-level settings extraction and save the output
-exec.exec('bash', [`${__dirname}/../settings.sh`, app, token], {
+exec.exec('bash', [`${__dirname}/../settings.sh`, app], {
   silent: true,
   listeners: {
     stdout: (data) => { stdout += data.toString(); },

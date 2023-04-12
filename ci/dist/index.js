@@ -6943,7 +6943,7 @@ const lib = __nccwpck_require__(22);
 const core = __nccwpck_require__(186);
 const exec = __nccwpck_require__(514);
 
-const settings = core.getInput('settings').split('/').slice(-1)[0];
+const settingsApp = core.getInput('settings').split('/').slice(-1)[0];
 const target = core.getInput('target', { required: true });
 const token = core.getInput('clone_token', { required: true });
 
@@ -6952,11 +6952,18 @@ process.env['INPUT_CLONE_TOKEN'] = token;
 
 (async function() {
   // Run the settings action if we should
-  if (settings) {
+  if (settingsApp) {
     await core.group(
-      `Fetch all application settings for ${settings}`,
+      `Fetch all application settings for ${settingsApp}`,
       () => {
-        process.env['INPUT_APP'] = settings;
+        // When settings should be loaded, we require
+        // the secret key for decryption
+        const secret_key = core.getInput('settings_secret_key', {
+          required: true
+        });
+
+        process.env['INPUT_SECRET_KEY'] = secret_key;
+        process.env['INPUT_APP'] = settingsApp;
         return exec.exec('node', [
           `${__dirname}/../../settings/dist/index.js`
         ], { env: lib.runtimeEnv() }).catch(() => process.exit(1));

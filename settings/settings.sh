@@ -78,8 +78,9 @@ EOF
 ) &> /dev/null
 
 # Run the export environment variable helper to export the settings
+APP_RECIPE="export-envs-$(${DEST}/exe/files-to-recipes <<< "${APP}")"
 SETTINGS_SECRET_KEY="${SECRET_KEY}" \
   make -C "${DEST}" --no-print-directory \
     export-envs-github-actions-commons \
-    "export-envs-${APP}" \
+    "${APP_RECIPE}" \
       | cut -d' ' -f2-

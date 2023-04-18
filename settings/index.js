@@ -8,7 +8,8 @@ const secret_key = core.getInput('secret_key', { required: true });
 
 const filterList = [
   'API_KEY', 'CREDENTIAL', 'ENCRYPTION', 'ghp_', 'PASSWORD',
-  'PRIVATE', 'SECRET', 'TOKEN', 'CERTIFICATE', 'SLACK_.*_CHANNEL'
+  'PRIVATE', 'SECRET', 'TOKEN', 'CERTIFICATE', 'SLACK_.*_CHANNEL',
+  'SEARCH_KEY', 'ADMIN_KEY'
 ];
 const filterPattern = new RegExp(filterList.join('|'), 'i');
 const isPrivate = (name) => filterPattern.test(name);

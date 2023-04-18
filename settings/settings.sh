@@ -51,7 +51,7 @@ trap cleanup EXIT
 /exe/
 /apps/github-actions-commons.md*
 /apps/${APP}.md*
-/user/deployhausgold/id*
+/users/deployhausgold/id*
 /Makefile
 EOF
   git -C "${DEST}" checkout master
@@ -59,13 +59,18 @@ EOF
 
 # Install the machine user SSH key for further organization access
 (
-  mkdir -p ${HOME}/.ssh
-  cp "${DEST}/user/deployhausgold"/id* \
-    ${HOME}/.ssh/
-  chmod 0600 ${HOME}/.ssh/id_rsa
-  chmod 0644 ${HOME}/.ssh/id_rsa.pub
   git config --global user.email 'deploy@hausgold.de'
   git config --global user.name 'deployhausgold'
+
+  SETTINGS_SECRET_KEY="${SECRET_KEY}" \
+    make -C "${DEST}" --no-print-directory \
+      .decrypt-users-deployhausgold-id-rsa \
+      .decrypt-users-deployhausgold-id-rsa-pub
+
+  mkdir -p ${HOME}/.ssh
+  cp "${DEST}/users/deployhausgold"/id* ${HOME}/.ssh/
+  chmod 0600 ${HOME}/.ssh/id_rsa
+  chmod 0644 ${HOME}/.ssh/id_rsa.pub
   cat >>${HOME}/.ssh/config <<EOF
 Host github.com
   StrictHostKeyChecking no

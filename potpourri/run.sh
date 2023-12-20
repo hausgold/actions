@@ -53,3 +53,6 @@ fi
 
 # Run the target command
 bash "${DEST}/dist/actions/${1}"
+
+# Run the Github Actions post-prepare script
+bash "${DEST}/dist/actions/ci-post-target"

@@ -18,5 +18,17 @@ branding:
   icon: 'check-circle'
   color: 'green'
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: 'composite'
+  steps:
+    # Checkout the application code to the current working directory
+    - uses: actions/checkout@v4
+
+    # Run our CI preparations
+    - run: node dist/index.js
+      shell: bash
+      working-directory: '${{ github.action_path }}'
+      env:
+        INPUT_SETTINGS: '${{ inputs.settings }}'
+        INPUT_TARGET: '${{ inputs.target }}'
+        INPUT_CLONE_TOKEN: '${{ inputs.clone_token }}'
+        INPUT_SETTINGS_SECRET_KEY: '${{ inputs.settings_secret_key }}'

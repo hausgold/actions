@@ -1,0 +1,103 @@
+name: Application Tests in a single job
+
+on:
+  workflow_call:
+    inputs:
+      jobs:
+        description: 'The GNU Make targets in a job matrix'
+        required: false
+        # The root test targets are: specs, style, security
+        # Just deliver the GNU Make recipe suffix without leading `test-`.
+        # To configure multiple jobs use an JSON array with strings. To
+        # configure multiple targets per job use comma as separator. (eg.
+        # `'["style", "security,specs"]'`)
+        default: '["style", "security"]'
+        type: string
+      spec_jobs:
+        description: 'The jobs/groups for a specs matrix'
+        required: false
+        default: '["1,2", "3,4"]'
+        type: string
+
+jobs:
+  specs:
+    name: Specs
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        groups: '${{ fromJSON(inputs.spec_jobs) }}'
+    env:
+      PARALLEL_TEST_FILTER: '${{ matrix.groups }}'
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: ci/docker-app
+
+      - name: Configure the parallel test groups
+        run:
+          TEST_GROUPS=$(count-parallel-groups '${{ inputs.spec_jobs }}');
+          echo "PARALLEL_TEST_GROUPS=${TEST_GROUPS}" >> ${GITHUB_ENV}
+
+      - name: Install the application
+        run: make install
+
+      - name: Run the application tests
+        run: make test-specs-parallel
+
+      - name: Upload the code coverage report
+        run: coverage part
+
+  targets:
+    name: Targets
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        targets: '${{ fromJSON(inputs.jobs) }}'
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: ci/docker-app
+
+      - name: Install the application
+        run: make install
+
+      - name: Run the application tests (${{ matrix.targets }})
+        run: make $(echo '${{ matrix.targets }}' | sed
+          -e 's/^/test-/g' -e 's/,/ test-/g' -e 's/test-test/test/g')
+
+  finalize:
+    name: Finalize
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+    needs: [specs, targets]
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: ci/noop
+
+      - name: Upload the code coverage report
+        run: coverage merge
+
+      - name: Build and upload application documentation
+        run: test -d build/docs &&
+          make -C build/docs upload notify &&
+          coverage --docs-only
+        if: github.ref == 'refs/heads/master'
+        env:
+          WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'

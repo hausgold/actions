@@ -1,0 +1,21 @@
+name: A no-op workflow for debugging purposes
+
+on:
+  workflow_call: {}
+
+jobs:
+  noop:
+    name: no-op
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: ci/docker-app
+
+      - name: Print all environment variables
+        run: env | sort

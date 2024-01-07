@@ -1,0 +1,11 @@
+name: Doing chores (cleanups, etc)
+
+on:
+  workflow_call: {}
+
+jobs:
+  draft_release:
+    name: Draft Release
+    uses: hausgold/actions/.github/workflows/common-release-drafter.yml@v2
+    secrets: inherit
+    if: github.ref == 'refs/heads/master' || github.event_name == 'release'

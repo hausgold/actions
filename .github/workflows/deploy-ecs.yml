@@ -1,7 +1,19 @@
 name: Deploy to AWS/ECS
 
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      base_path:
+        description: The path to run all commands in, relative to the
+          repository root
+        required: false
+        default: .
+        type: string
+      force_env:
+        description: When given it overwrites the Potpourri configured
+          `DEPLOY_ENV` environment variable
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -17,12 +29,24 @@ jobs:
           settings: '${{ github.repository }}'
           target: ci/docker-app-deploy
 
+      - name: Force deploy environment
+        run:
+          var ORIG_DEPLOY_ENV ${DEPLOY_ENV};
+          var DEPLOY_ENV '${{ inputs.force_env }}'
+        if: inputs.force_env != null
+
       - name: Deploy the application
         run: ecs-deployment deploy
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Clean old application packages
         run: ecs-deployment clean
+        working-directory: '${{ inputs.base_path }}'
         if: env.DEPLOY_ENV == 'production'
+
+      - name: Restore deploy environment
+        run: var DEPLOY_ENV ${ORIG_DEPLOY_ENV}
+        if: inputs.force_env != null
 
       - name: Write a message to Slack
         run: slack
@@ -31,13 +55,9 @@ jobs:
         run: deployment '${{ job.status }}'
 
       - name: Build and upload application documentation
-        run: test -d build/docs &&
-          make -C build/docs upload notify &&
-          coverage --docs-only
+        run: test -d build/docs
+          && (make -C build/docs upload notify && coverage --docs-only)
+          || true
         if: env.DEPLOY_ENV == 'production'
         env:
           WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'
-
-      - name: Add this job to the commit status
-        run: commit-status '${{ job.status }}'
-        if: always()

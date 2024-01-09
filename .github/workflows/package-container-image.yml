@@ -1,7 +1,21 @@
 name: Package Container Image
 
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      # We focus on application which uses the shared
+      # container image by default
+      base_path:
+        description: The container image build path, relative to the
+          repository root
+        required: false
+        default: config/container
+        type: string
+      publish_prebuilt:
+        description: Whenever to publish a prebuilt image
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   package:
@@ -18,13 +32,18 @@ jobs:
           target: ci/docker-app
 
       - name: Build the container image
-        run: make -C config/container build
+        run: make build
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Run the container image test suite
-        run: make -C config/container test
+        run: make test
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Upload the container image (AWS)
-        run: make -C config/container publish
+        run: make publish
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Upload the container image (Docker Hub)
-        run: make -C config/container publish-prebuilt
+        if: inputs.publish_prebuilt == true
+        run: make publish-prebuilt
+        working-directory: '${{ inputs.base_path }}'

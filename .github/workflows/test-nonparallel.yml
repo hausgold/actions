@@ -3,8 +3,19 @@ name: Application Tests in a single job
 on:
   workflow_call:
     inputs:
+      base_path:
+        description: The path to run the GNU Make target in, relative to the
+          repository root
+        required: false
+        default: .
+        type: string
+      setup_target:
+        description: The GNU Make target(s) to setup the application for testing
+        required: false
+        default: install
+        type: string
       targets:
-        description: 'The GNU Make targets to run in a single job'
+        description: The GNU Make targets to run in a single job
         required: false
         # The root test targets are: specs, style, security
         # Just deliver the GNU Make recipe suffix without leading `test-`.
@@ -12,7 +23,7 @@ on:
         # GNU Make recipe. This way the application Makefile defines what to
         # run by default. To configure multiple targets use comma as
         # separator. (eg. `security,style,specs`)
-        default: 'test'
+        default: test
         type: string
 
 jobs:
@@ -29,20 +40,23 @@ jobs:
           settings: '${{ github.repository }}'
           target: ci/docker-app
 
-      - name: Install the application
-        run: make install
+      - name: Setup the application
+        run: make '${{ inputs.setup_target }}'
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Run the application tests
-        run: make $(echo '${{ inputs.targets }}' | sed
-          -e 's/^/test-/g' -e 's/,/ test-/g' -e 's/test-test/test/g')
+        run: make $(echo '${{ inputs.targets }}'
+          | sed -e 's/^/test-/g' -e 's/,/ test-/g' -e 's/test-test/test/g')
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Upload the code coverage report
         run: coverage
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Build and upload application documentation
-        run: test -d build/docs &&
-          make -C build/docs upload notify &&
-          coverage --docs-only
+        run: test -d build/docs
+          && (make -C build/docs upload notify && coverage --docs-only)
+          || true
         if: github.ref == 'refs/heads/master'
         env:
           WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'

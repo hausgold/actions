@@ -3,8 +3,19 @@ name: Application Tests in a single job
 on:
   workflow_call:
     inputs:
+      base_path:
+        description: The path to run the GNU Make target in, relative to the
+          repository root
+        required: false
+        default: .
+        type: string
+      setup_target:
+        description: The GNU Make target(s) to setup the application for testing
+        required: false
+        default: install
+        type: string
       jobs:
-        description: 'The GNU Make targets in a job matrix'
+        description: The GNU Make targets in a job matrix
         required: false
         # The root test targets are: specs, style, security
         # Just deliver the GNU Make recipe suffix without leading `test-`.
@@ -14,7 +25,7 @@ on:
         default: '["style", "security"]'
         type: string
       spec_jobs:
-        description: 'The jobs/groups for a specs matrix'
+        description: The jobs/groups for a specs matrix
         required: false
         default: '["1,2", "3,4"]'
         type: string
@@ -44,14 +55,17 @@ jobs:
           TEST_GROUPS=$(count-parallel-groups '${{ inputs.spec_jobs }}');
           echo "PARALLEL_TEST_GROUPS=${TEST_GROUPS}" >> ${GITHUB_ENV}
 
-      - name: Install the application
-        run: make install
+      - name: Setup the application
+        run: make '${{ inputs.setup_target }}'
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Run the application tests
         run: make test-specs-parallel
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Upload the code coverage report
         run: coverage part
+        working-directory: '${{ inputs.base_path }}'
 
   targets:
     name: Targets
@@ -70,12 +84,14 @@ jobs:
           settings: '${{ github.repository }}'
           target: ci/docker-app
 
-      - name: Install the application
-        run: make install
+      - name: Setup the application
+        run: make '${{ inputs.setup_target }}'
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Run the application tests (${{ matrix.targets }})
-        run: make $(echo '${{ matrix.targets }}' | sed
-          -e 's/^/test-/g' -e 's/,/ test-/g' -e 's/test-test/test/g')
+        run: make $(echo '${{ matrix.targets }}'
+          | sed -e 's/^/test-/g' -e 's/,/ test-/g' -e 's/test-test/test/g')
+        working-directory: '${{ inputs.base_path }}'
 
   finalize:
     name: Finalize
@@ -93,11 +109,12 @@ jobs:
 
       - name: Upload the code coverage report
         run: coverage merge
+        working-directory: '${{ inputs.base_path }}'
 
       - name: Build and upload application documentation
-        run: test -d build/docs &&
-          make -C build/docs upload notify &&
-          coverage --docs-only
+        run: test -d build/docs
+          && (make -C build/docs upload notify && coverage --docs-only)
+          || true
         if: github.ref == 'refs/heads/master'
         env:
           WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'

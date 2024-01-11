@@ -34,7 +34,7 @@ exec.exec('bash', [`${__dirname}/../settings.sh`, app], {
   stdout.trim().split(/\n/).forEach((cur) => {
     let parts = cur.trim().split('=');
     let key = parts.shift();
-    let val = parts.join('=').replace(/^['"]|['"]$/g, '');
+    let val = parts.join('=').replace(/^['"]|['"]$/g, '').replace('\\$', '$');
 
     lib.exportVariable(key, val);
 

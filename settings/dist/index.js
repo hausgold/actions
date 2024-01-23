@@ -6971,23 +6971,20 @@ exec.exec('bash', [`${__dirname}/../settings.sh`, app], {
     stderr: (data) => { stderr += data.toString(); }
   }
 }).then(() => {
-  // Sanitize the environment variables for export
-  let env = stdout.trim().split(/\n/).reduce((memo, cur) => {
+  // Sanitize the environment variables, then register them for export
+  stdout.trim().split(/\n/).forEach((cur) => {
     let parts = cur.trim().split('=');
     let key = parts.shift();
     let val = parts.join('=').replace(/^['"]|['"]$/g, '');
-    memo[key] = val;
-    return memo;
-  }, {});
 
-  // Register all environment variables and register secrets for masking
-  for (let [key, val] of Object.entries(env)) {
     lib.exportVariable(key, val);
+
     if (isPrivate(key) && val != '') {
       core.setSecret(val);
     }
+
     core.info(`exported environment variable: ${key}=${val}`)
-  }
+  });
 
   process.exit(0);
 }).catch((err) => {

@@ -11,8 +11,13 @@ on:
         required: false
         default: config/container
         type: string
+      publish:
+        description: Whenever to publish the image (AWS)
+        required: false
+        default: true
+        type: boolean
       publish_prebuilt:
-        description: Whenever to publish a prebuilt image
+        description: Whenever to publish a prebuilt image (Docker Hub)
         required: false
         default: true
         type: boolean
@@ -40,6 +45,7 @@ jobs:
         working-directory: '${{ inputs.base_path }}'
 
       - name: Upload the container image (AWS)
+        if: inputs.publish == true
         run: make publish
         working-directory: '${{ inputs.base_path }}'
 

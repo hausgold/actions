@@ -1,0 +1,64 @@
+name: Deploy to AWS/S3
+
+on:
+  workflow_call:
+    inputs:
+      base_path:
+        description: The path to run all commands in, relative to the
+          repository root
+        required: false
+        default: .
+        type: string
+      force_env:
+        description: When given it overwrites the Potpourri configured
+          `DEPLOY_ENV` environment variable
+        required: false
+        type: string
+      setup_target:
+        description: The GNU Make target(s) to setup the application
+          for building
+        required: false
+        default: install
+        type: string
+
+jobs:
+  deploy:
+    name: ECS
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: ci/docker-app
+
+      - name: Setup the application
+        run: make '${{ inputs.setup_target }}'
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Force deploy environment
+        run:
+          var ORIG_DEPLOY_ENV ${DEPLOY_ENV};
+          var DEPLOY_ENV '${{ inputs.force_env }}'
+        if: inputs.force_env != null
+
+      - name: Build the application package
+        run: s3-deployment build
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Deploy the application
+        run: s3-deployment deploy
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Restore deploy environment
+        run: var DEPLOY_ENV ${ORIG_DEPLOY_ENV}
+        if: inputs.force_env != null
+
+      - name: Write a message to Slack
+        run: slack
+
+      - name: Create a Github Deployment
+        run: deployment '${{ job.status }}'

@@ -75,6 +75,9 @@ EOF
 Host github.com
   StrictHostKeyChecking no
 EOF
+  cat >>${HOME}/.ssh/setup <<EOF
+ssh-add ~/.ssh/id_rsa
+EOF
 ) &> /dev/null
 
 # Run the export environment variable helper to export the settings

@@ -32,3 +32,15 @@ runs:
         INPUT_TARGET: '${{ inputs.target }}'
         INPUT_CLONE_TOKEN: '${{ inputs.clone_token }}'
         INPUT_SETTINGS_SECRET_KEY: '${{ inputs.settings_secret_key }}'
+
+    # Cache common application dependencies for shared container image
+    # application workloads
+    - uses: actions/cache@v4
+      if: inputs.target == 'ci/docker-app'
+      with:
+        key: node-modules-${{ hashFiles('package-lock.json', 'yarn.lock') }}
+        restore-keys: node-modules-
+        path: |
+          node_modules
+          config/container/.node-gyp
+          config/container/.npm

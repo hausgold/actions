@@ -34,7 +34,7 @@ jobs:
   specs:
     name: Specs
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -70,7 +70,7 @@ jobs:
   targets:
     name: Targets
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -96,7 +96,7 @@ jobs:
   finalize:
     name: Finalize
     runs-on: ubuntu-22.04
-    timeout-minutes: 2
+    timeout-minutes: 5
     needs: [specs, targets]
     steps:
       - name: Prepare the environment

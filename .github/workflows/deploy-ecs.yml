@@ -19,7 +19,7 @@ jobs:
   deploy:
     name: ECS
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2
@@ -52,7 +52,7 @@ jobs:
         run: slack
 
       - name: Create a Github Deployment
-        run: deployment '${{ job.status }}'
+        run: deployment
 
       - name: Build and upload application documentation
         run: test -d build/docs

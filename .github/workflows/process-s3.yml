@@ -8,12 +8,13 @@ jobs:
     name: Draft Release
     uses: hausgold/actions/.github/workflows/common-release-drafter.yml@v2
     secrets: inherit
-    if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event_name != 'pull_request' &&
+      (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
   cleanup_deployment:
     name: Cleanup Deployment
     runs-on: ubuntu-22.04
-    timeout-minutes: 3
+    timeout-minutes: 5
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     steps:
       - name: Prepare the environment
@@ -22,10 +23,15 @@ jobs:
           clone_token: '${{ secrets.CLONE_TOKEN }}'
           settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
           settings: '${{ github.repository }}'
-          target: ci/next-fe-deploy
+          target: ci/docker-app
+
+      - name: Reconfigure the pull request/branch details
+        run:
+          var GITHUB_BRANCH '${{ github.head_ref }}';
+          var GITHUB_PULL_REQUEST '${{ github.event.number }}'
 
       - name: Remove the Github Deployment of the feature branch
-        run: deployment --remove '${{ github.head_ref }}'
+        run: deployment --remove
 
       - name: Remove S3 bucket of the feature branch
-        run: remove-branch-deployment '${{ github.head_ref }}'
+        run: s3-deployment clean

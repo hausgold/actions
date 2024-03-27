@@ -1,0 +1,50 @@
+name: Package NPM
+
+on:
+  workflow_call:
+    inputs:
+      base_path:
+        description: The build path, relative to the repository root
+        required: false
+        default: .
+        type: string
+      publish:
+        description: Whenever to publish the package
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  package:
+    name: NPM Package
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: ci/docker-app
+
+      - name: Setup the project
+        run: make install
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Build the package
+        run: make build
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Run the package test suite
+        run: make test
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Reconfigure NPM settings
+        run: npm-auth-token-from-env
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Publish the package
+        if: inputs.publish == true
+        run: make publish
+        working-directory: '${{ inputs.base_path }}'

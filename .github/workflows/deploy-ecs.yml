@@ -55,9 +55,7 @@ jobs:
         run: deployment
 
       - name: Build and upload application documentation
-        run: test -d build/docs
-          && (make -C build/docs upload notify && coverage --docs-only)
-          || true
+        run: api-docs && coverage --docs-only
         if: env.DEPLOY_ENV == 'production'
         env:
           WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'

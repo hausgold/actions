@@ -93,6 +93,12 @@ jobs:
           | sed -e 's/^/test-/g' -e 's/,/ test-/g' -e 's/test-test/test/g')
         working-directory: '${{ inputs.base_path }}'
 
+      - name: Build and upload application documentation
+        run: api-docs --skip-upload && coverage --docs-only
+        if: github.ref == 'refs/heads/master'
+        env:
+          WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'
+
   finalize:
     name: Finalize
     runs-on: ubuntu-22.04
@@ -110,11 +116,3 @@ jobs:
       - name: Upload the code coverage report
         run: coverage merge
         working-directory: '${{ inputs.base_path }}'
-
-      - name: Build and upload application documentation
-        run: test -d build/docs
-          && (make -C build/docs upload notify && coverage --docs-only)
-          || true
-        if: github.ref == 'refs/heads/master'
-        env:
-          WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'

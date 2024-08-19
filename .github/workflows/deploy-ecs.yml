@@ -39,6 +39,11 @@ jobs:
         run: ecs-deployment deploy
         working-directory: '${{ inputs.base_path }}'
 
+      - name: Run always post-deployment hooks
+        run: ecs-deployment always-post-deploy-hooks
+        working-directory: '${{ inputs.base_path }}'
+        if: always()
+
       - name: Clean old application packages
         run: ecs-deployment clean
         working-directory: '${{ inputs.base_path }}'

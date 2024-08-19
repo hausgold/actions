@@ -53,6 +53,11 @@ jobs:
         run: s3-deployment deploy
         working-directory: '${{ inputs.base_path }}'
 
+      - name: Run always post-deployment hooks
+        run: s3-deployment always-post-deploy-hooks
+        working-directory: '${{ inputs.base_path }}'
+        if: always()
+
       - name: Restore deploy environment
         run: var DEPLOY_ENV ${ORIG_DEPLOY_ENV}
         if: inputs.force_env != null

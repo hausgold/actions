@@ -14,12 +14,17 @@ on:
           `DEPLOY_ENV` environment variable
         required: false
         type: string
+      timeout_minutes:
+        description: Maximum time in minutes the workflow is allowed to run
+        required: false
+        default: 20
+        type: number
 
 jobs:
   deploy:
     name: ECS
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: '${{ inputs.timeout_minutes }}'
     steps:
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2

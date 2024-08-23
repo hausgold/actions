@@ -2826,12 +2826,17 @@ var __webpack_exports__ = {};
 var exports = __webpack_exports__;
 const fs = __nccwpck_require2_(147);
 const core = __nccwpck_require2_(186);
-const runtimeEnvPath = '/tmp/Envfile.runtime';
+const runtimeEnvPath = '/opt/hausgold/Envfile';
 
 // Fetch the current runtime environment bundle and return the parsed object.
 // When it does not yet exists we just return an empty object.
 const runtimeEnvBase = () => {
-  if (!fs.existsSync(runtimeEnvPath)) { return {}; }
+  // Make sure to create the root actions directory
+  fs.mkdirSync('/opt/hausgold', { recursive: true })
+  if (!fs.existsSync(runtimeEnvPath)) {
+    fs.writeFileSync(runtimeEnvPath, '{}', { mode: 0o666 });
+  }
+
   return JSON.parse(fs.readFileSync(runtimeEnvPath, 'utf8'));
 };
 

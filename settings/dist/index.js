@@ -2826,12 +2826,17 @@ var __webpack_exports__ = {};
 var exports = __webpack_exports__;
 const fs = __nccwpck_require2_(147);
 const core = __nccwpck_require2_(186);
-const runtimeEnvPath = '/tmp/Envfile.runtime';
+const runtimeEnvPath = '/opt/hausgold/Envfile';
 
 // Fetch the current runtime environment bundle and return the parsed object.
 // When it does not yet exists we just return an empty object.
 const runtimeEnvBase = () => {
-  if (!fs.existsSync(runtimeEnvPath)) { return {}; }
+  // Make sure to create the root actions directory
+  fs.mkdirSync('/opt/hausgold', { recursive: true })
+  if (!fs.existsSync(runtimeEnvPath)) {
+    fs.writeFileSync(runtimeEnvPath, '{}', { mode: 0o666 });
+  }
+
   return JSON.parse(fs.readFileSync(runtimeEnvPath, 'utf8'));
 };
 
@@ -6971,23 +6976,20 @@ exec.exec('bash', [`${__dirname}/../settings.sh`, app], {
     stderr: (data) => { stderr += data.toString(); }
   }
 }).then(() => {
-  // Sanitize the environment variables for export
-  let env = stdout.trim().split(/\n/).reduce((memo, cur) => {
+  // Sanitize the environment variables, then register them for export
+  stdout.trim().split(/\n/).forEach((cur) => {
     let parts = cur.trim().split('=');
     let key = parts.shift();
     let val = parts.join('=').replace(/^['"]|['"]$/g, '');
-    memo[key] = val;
-    return memo;
-  }, {});
 
-  // Register all environment variables and register secrets for masking
-  for (let [key, val] of Object.entries(env)) {
     lib.exportVariable(key, val);
+
     if (isPrivate(key) && val != '') {
       core.setSecret(val);
     }
+
     core.info(`exported environment variable: ${key}=${val}`)
-  }
+  });
 
   process.exit(0);
 }).catch((err) => {

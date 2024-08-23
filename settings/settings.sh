@@ -75,6 +75,9 @@ EOF
 Host github.com
   StrictHostKeyChecking no
 EOF
+  cat >>${HOME}/.ssh/setup <<EOF
+ssh-add ~/.ssh/id_rsa
+EOF
 ) &> /dev/null
 
 # Run the export environment variable helper to export the settings
@@ -83,4 +86,5 @@ SETTINGS_SECRET_KEY="${SECRET_KEY}" \
   make -C "${DEST}" --no-print-directory \
     export-envs-github-actions-commons \
     "${APP_RECIPE}" \
-      | cut -d' ' -f2-
+      | cut -d' ' -f2- \
+      | sort -u

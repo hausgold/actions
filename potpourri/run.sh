@@ -19,13 +19,14 @@ fi
 # Common settings
 APP="${1}"
 GIT_URL="https://${2}@github.com/hausgold/potpourri.git"
-DEST='/tmp/potpourri'
+DEST='/opt/hausgold/potpourri'
 
 # Just clone and build it once and use the cache on subsequent calls
 if [ ! -d "${DEST}" ]; then
   # Fetch the potpourri repository (some day Github may
   # allows server-side filtering)
   (
+    mkdir -p "${DEST}"
     git clone \
       --no-checkout \
       --depth=1 \

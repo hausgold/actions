@@ -19,6 +19,11 @@ on:
         required: false
         default: 20
         type: number
+      build_docs:
+        description: Try to build the docs on production builds, or not
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   deploy:
@@ -66,6 +71,6 @@ jobs:
 
       - name: Build and upload application documentation
         run: api-docs && coverage --docs-only
-        if: env.DEPLOY_ENV == 'production'
+        if: inputs.build_docs == true && env.DEPLOY_ENV == 'production'
         env:
           WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'

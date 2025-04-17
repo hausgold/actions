@@ -52,6 +52,9 @@ EOF
   git -C "${DEST}" pull
 fi
 
+# Run the Github Actions pre-prepare script
+bash "${DEST}/dist/actions/ci-pre-target"
+
 # Run the target command
 bash "${DEST}/dist/actions/${1}"
 

@@ -44,3 +44,12 @@ runs:
           node_modules
           config/container/.node-gyp
           config/container/.npm
+
+    # Cache common application dependencies for serverless application workloads
+    - uses: actions/cache@v4
+      if: inputs.target == 'ci/docker-app'
+      with:
+        key: ruby-gems-${{ hashFiles('Gemfile.lock') }}
+        restore-keys: ruby-gems-
+        path: |
+          vendor/bundle

@@ -1,0 +1,79 @@
+name: Deploy to AWS/Lambda
+
+on:
+  workflow_call:
+    inputs:
+      base_path:
+        description: The path to run all commands in, relative to the
+          repository root
+        required: false
+        default: .
+        type: string
+      force_env:
+        description: When given it overwrites the Potpourri configured
+          `DEPLOY_ENV` environment variable
+        required: false
+        type: string
+      timeout_minutes:
+        description: Maximum time in minutes the workflow is allowed to run
+        required: false
+        default: 20
+        type: number
+      build_docs:
+        description: Try to build the docs on production builds, or not
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  deploy:
+    name: Lambda
+    runs-on: ubuntu-22.04
+    timeout-minutes: '${{ inputs.timeout_minutes }}'
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: ci/docker-app
+
+      - name: Force deploy environment
+        run:
+          var ORIG_DEPLOY_ENV ${DEPLOY_ENV};
+          var DEPLOY_ENV '${{ inputs.force_env }}'
+        if: inputs.force_env != null
+
+      - name: Build the application package
+        run: make build
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Deploy the application
+        run: lambda-deployment deploy
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Run always post-deployment hooks
+        run: lambda-deployment always-post-deploy-hooks
+        working-directory: '${{ inputs.base_path }}'
+        if: always()
+
+      - name: Clean old application versions
+        run: lambda-deployment clean
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Restore deploy environment
+        run: var DEPLOY_ENV ${ORIG_DEPLOY_ENV}
+        if: inputs.force_env != null
+
+      - name: Write a message to Slack
+        run: slack
+
+      - name: Create a Github Deployment
+        run: deployment
+
+      - name: Build and upload application documentation
+        run: api-docs && coverage --docs-only
+        if: inputs.build_docs == true && env.DEPLOY_ENV == 'production'
+        env:
+          WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'

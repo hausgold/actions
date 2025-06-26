@@ -11,5 +11,5 @@ branding:
   icon: 'terminal'
   color: 'green'
 runs:
-  using: 'node16'
+  using: 'node24'
   main: 'dist/index.js'

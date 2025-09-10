@@ -21,12 +21,17 @@ on:
         required: false
         default: true
         type: boolean
+      timeout-minutes:
+        description: The maximum of time the package job may run
+        required: false
+        default: 15
+        type: number
 
 jobs:
   package:
     name: Container Image
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: '${{ inputs.timeout-minutes }}'
     steps:
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2

@@ -43,7 +43,7 @@ on multiple jobs.
 ### Fetch application settings
 
 This action allows you to fetch the application settings from our
-[Settings](https://github.com/hausgold/settings) repository by specifing the
+[Settings](https://github.com/hausgold/settings) repository by specifying the
 application name and the Github clone token. Make sure your application
 repository have set the `CLONE_TOKEN` secret correctly. Afterwards you
 can access all settings via regular environment variables.

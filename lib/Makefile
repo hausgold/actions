@@ -34,7 +34,7 @@ WC ?= wc
 XARGS ?= xargs
 
 all:
-	# Shared Libray
+	# Shared Library
 	#
 	# install         Install the dependencies
 	# build           Build all distribution files

@@ -1,5 +1,9 @@
 ![Actions](doc/assets/project.svg)
 
+> [!NOTE]
+> This version is deprecated. Please upgrade to the [latest `@v[MAJOR]`
+> branch](https://github.com/hausgold/actions/branches/all).
+
 This project is dedicated to bundle our shared Github Actions and it serves
 some trampoline actions to other HAUSGOLD internals which are not public.
 
@@ -26,7 +30,7 @@ script](#run-a-potpourri-script) action.
 ```yaml
 steps:
   - name: Prepare the virtual environment
-    uses: hausgold/actions/ci@master
+    uses: hausgold/actions/ci@v1
     with:
       clone_token: '${{ secrets.CLONE_TOKEN }}'
       settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
@@ -51,7 +55,7 @@ can access all settings via regular environment variables.
 ```yaml
 steps:
   - name: Fetch all application settings
-    uses: hausgold/actions/settings@master
+    uses: hausgold/actions/settings@v1
     with:
       clone_token: '${{ secrets.CLONE_TOKEN }}'
       secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
@@ -69,7 +73,7 @@ further details and a full list of supported targets.
 ```
 steps:
   - name: Prepare the virtual environment
-    uses: hausgold/actions/potpourri@master
+    uses: hausgold/actions/potpourri@v1
     with:
       clone_token: '${{ secrets.CLONE_TOKEN }}'
       target: ci/sd-deploy

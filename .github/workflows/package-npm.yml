@@ -3,6 +3,11 @@ name: Package NPM
 on:
   workflow_call:
     inputs:
+      potpourri_target:
+        description: The Potpourri target to run
+        required: false
+        default: ci/docker-app
+        type: string
       base_path:
         description: The build path, relative to the repository root
         required: false
@@ -26,7 +31,7 @@ jobs:
           clone_token: '${{ secrets.CLONE_TOKEN }}'
           settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
           settings: '${{ github.repository }}'
-          target: ci/docker-app
+          target: '${{ inputs.potpourri_target }}'
 
       - name: Setup the project
         run: make install

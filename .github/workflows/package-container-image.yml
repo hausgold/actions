@@ -3,6 +3,11 @@ name: Package Container Image
 on:
   workflow_call:
     inputs:
+      potpourri_target:
+        description: The Potpourri target to run
+        required: false
+        default: ci/docker-app
+        type: string
       # We focus on application which uses the shared
       # container image by default
       base_path:
@@ -39,7 +44,7 @@ jobs:
           clone_token: '${{ secrets.CLONE_TOKEN }}'
           settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
           settings: '${{ github.repository }}'
-          target: ci/docker-app
+          target: '${{ inputs.potpourri_target }}'
 
       - name: Build the container image
         run: make build

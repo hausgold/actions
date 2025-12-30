@@ -3,6 +3,11 @@ name: Application Tests in a single job
 on:
   workflow_call:
     inputs:
+      potpourri_target:
+        description: The Potpourri target to run
+        required: false
+        default: ci/docker-app
+        type: string
       base_path:
         description: The path to run the GNU Make target in, relative to the
           repository root
@@ -48,7 +53,7 @@ jobs:
           clone_token: '${{ secrets.CLONE_TOKEN }}'
           settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
           settings: '${{ github.repository }}'
-          target: ci/docker-app
+          target: '${{ inputs.potpourri_target }}'
 
       - name: Configure the parallel test groups
         run:

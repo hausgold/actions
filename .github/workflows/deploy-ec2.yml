@@ -1,4 +1,4 @@
-name: Deploy to AWS/S3
+name: Deploy to AWS/EC2
 
 on:
   workflow_call:
@@ -19,21 +19,20 @@ on:
           `DEPLOY_ENV` environment variable
         required: false
         type: string
-      setup_target:
-        description: The GNU Make target(s) to setup the application
-          for building
-        required: false
-        default: install
-        type: string
       timeout_minutes:
         description: Maximum time in minutes the workflow is allowed to run
         required: false
         default: 20
         type: number
+      build_docs:
+        description: Try to build the docs on production builds, or not
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   deploy:
-    name: S3
+    name: EC2
     runs-on: ubuntu-22.04
     timeout-minutes: '${{ inputs.timeout_minutes }}'
     steps:
@@ -45,26 +44,18 @@ jobs:
           settings: '${{ github.repository }}'
           target: '${{ inputs.potpourri_target }}'
 
-      - name: Setup the application
-        run: make '${{ inputs.setup_target }}'
-        working-directory: '${{ inputs.base_path }}'
-
       - name: Force deploy environment
         run:
           var ORIG_DEPLOY_ENV ${DEPLOY_ENV};
           var DEPLOY_ENV '${{ inputs.force_env }}'
         if: inputs.force_env != null
 
-      - name: Build the application package
-        run: s3-deployment build
-        working-directory: '${{ inputs.base_path }}'
-
       - name: Deploy the application
-        run: s3-deployment deploy
+        run: ec2-deployment deploy
         working-directory: '${{ inputs.base_path }}'
 
       - name: Run always post-deployment hooks
-        run: s3-deployment always-post-deploy-hooks
+        run: ec2-deployment always-post-deploy-hooks
         working-directory: '${{ inputs.base_path }}'
         if: always()
 
@@ -77,3 +68,9 @@ jobs:
 
       - name: Create a Github Deployment
         run: deployment
+
+      - name: Build and upload application documentation
+        run: api-docs && coverage --docs-only
+        if: inputs.build_docs == true && env.DEPLOY_ENV == 'production'
+        env:
+          WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'

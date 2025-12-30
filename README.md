@@ -1,5 +1,9 @@
 ![Actions](doc/assets/project.svg)
 
+> [!NOTE]
+> This version is deprecated. Please upgrade to the [latest `@v[MAJOR]`
+> branch](https://github.com/hausgold/actions/branches/all).
+
 This project is dedicated to bundle our shared Github Actions and it serves
 some trampoline actions to other HAUSGOLD internals which are not public.
 

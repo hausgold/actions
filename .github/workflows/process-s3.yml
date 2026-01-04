@@ -13,7 +13,7 @@ jobs:
 
   cleanup_deployment:
     name: Cleanup Deployment
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     steps:

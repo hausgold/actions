@@ -33,7 +33,7 @@ on:
 jobs:
   deploy:
     name: ECS
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: '${{ inputs.timeout_minutes }}'
     steps:
       - name: Prepare the environment

@@ -38,7 +38,7 @@ on:
 jobs:
   specs:
     name: Specs
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -74,7 +74,7 @@ jobs:
 
   targets:
     name: Targets
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -106,7 +106,7 @@ jobs:
 
   finalize:
     name: Finalize
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: [specs, targets]
     steps:

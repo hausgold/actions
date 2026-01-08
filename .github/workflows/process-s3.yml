@@ -1,7 +1,13 @@
 name: Doing chores (cleanups, etc)
 
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      potpourri_target:
+        description: The Potpourri target to run
+        required: false
+        default: ci/docker-app
+        type: string
 
 jobs:
   draft_release:

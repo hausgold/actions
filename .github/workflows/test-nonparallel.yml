@@ -63,9 +63,8 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: RSpec Tests
-          path: '${{ inputs.base_path }}/tmp/rspec-results*.xml'
-          reporter: java-junit
-          list-tests: all
+          path: '${{ inputs.base_path }}/tmp/rspec-results*.json'
+          reporter: rspec-json
           fail-on-error: false
 
       - name: Build and upload application documentation

@@ -76,8 +76,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rspec-junit-${{ strategy.job-index }}
-          path: '${{ inputs.base_path }}/tmp/rspec-results*.xml'
+          name: rspec-json-${{ strategy.job-index }}
+          path: '${{ inputs.base_path }}/tmp/rspec-results*.json'
           if-no-files-found: ignore
 
   targets:
@@ -136,8 +136,8 @@ jobs:
         continue-on-error: true
         uses: actions/download-artifact@v4
         with:
-          pattern: rspec-junit-*
-          path: rspec-junit/
+          pattern: rspec-json-*
+          path: rspec-json/
           merge-multiple: true
 
       - name: Publish RSpec test report
@@ -145,7 +145,6 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: RSpec Tests
-          path: rspec-junit/**/*.xml
-          reporter: java-junit
-          list-tests: all
+          path: rspec-json/**/*.json
+          reporter: rspec-json
           fail-on-error: false

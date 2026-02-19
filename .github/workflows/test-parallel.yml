@@ -138,7 +138,6 @@ jobs:
         with:
           pattern: rspec-json-*
           path: rspec-json/
-          merge-multiple: true
 
       - name: Publish RSpec test report
         if: always()

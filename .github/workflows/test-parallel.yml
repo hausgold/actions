@@ -72,6 +72,10 @@ jobs:
         run: coverage part
         working-directory: '${{ inputs.base_path }}'
 
+      - name: List RSpec output files (debug)
+        if: always()
+        run: find '${{ inputs.base_path }}/tmp' -name 'rspec-results*' 2>/dev/null || echo 'No rspec-results files found'
+
       - name: Upload RSpec test results
         if: always()
         uses: actions/upload-artifact@v4

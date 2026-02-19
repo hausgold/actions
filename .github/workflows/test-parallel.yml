@@ -132,6 +132,8 @@ jobs:
         working-directory: '${{ inputs.base_path }}'
 
       - name: Download RSpec test results
+        if: always()
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           pattern: rspec-junit-*
@@ -139,6 +141,7 @@ jobs:
           merge-multiple: true
 
       - name: Publish RSpec test report
+        if: always()
         uses: dorny/test-reporter@v1
         with:
           name: RSpec Tests

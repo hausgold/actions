@@ -118,9 +118,6 @@ jobs:
     timeout-minutes: 5
     needs: [specs, targets]
     if: always()
-    permissions:
-      checks: write
-      pull-requests: write
     steps:
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2

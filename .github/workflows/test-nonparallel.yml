@@ -65,6 +65,7 @@ jobs:
           name: RSpec Tests
           path: '${{ inputs.base_path }}/tmp/rspec-results*.xml'
           reporter: java-junit
+          list-tests: all
           fail-on-error: false
 
       - name: Build and upload application documentation

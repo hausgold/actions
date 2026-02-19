@@ -147,4 +147,5 @@ jobs:
           name: RSpec Tests
           path: rspec-junit/**/*.xml
           reporter: java-junit
+          list-tests: all
           fail-on-error: false

@@ -65,6 +65,7 @@ jobs:
           name: RSpec Tests
           path: '${{ inputs.base_path }}/tmp/rspec-results*.json'
           reporter: rspec-json
+          list-tests: failed
           fail-on-error: false
 
       - name: Build and upload application documentation

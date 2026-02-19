@@ -146,4 +146,5 @@ jobs:
           name: RSpec Tests
           path: rspec-json/**/*.json
           reporter: rspec-json
+          list-tests: failed
           fail-on-error: false

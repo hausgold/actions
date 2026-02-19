@@ -72,6 +72,14 @@ jobs:
         run: coverage part
         working-directory: '${{ inputs.base_path }}'
 
+      - name: Upload RSpec test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rspec-junit-${{ strategy.job-index }}
+          path: '${{ inputs.base_path }}/tmp/rspec-results*.xml'
+          if-no-files-found: ignore
+
   targets:
     name: Targets
     runs-on: ubuntu-24.04
@@ -109,6 +117,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: [specs, targets]
+    if: always()
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2
@@ -121,3 +133,18 @@ jobs:
       - name: Upload the code coverage report
         run: coverage merge
         working-directory: '${{ inputs.base_path }}'
+
+      - name: Download RSpec test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rspec-junit-*
+          path: rspec-junit/
+          merge-multiple: true
+
+      - name: Publish RSpec test report
+        uses: dorny/test-reporter@v1
+        with:
+          name: RSpec Tests
+          path: rspec-junit/**/*.xml
+          reporter: java-junit
+          fail-on-error: false

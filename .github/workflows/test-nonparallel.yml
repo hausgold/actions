@@ -36,6 +36,9 @@ jobs:
     name: Application
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2
@@ -57,6 +60,15 @@ jobs:
       - name: Upload the code coverage report
         run: coverage
         working-directory: '${{ inputs.base_path }}'
+
+      - name: Publish RSpec test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: RSpec Tests
+          path: '${{ inputs.base_path }}/tmp/rspec-results*.xml'
+          reporter: java-junit
+          fail-on-error: false
 
       - name: Build and upload application documentation
         run: api-docs --skip-upload && coverage --docs-only

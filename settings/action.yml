@@ -14,5 +14,5 @@ branding:
   icon: 'lock'
   color: 'green'
 runs:
-  using: 'node24'
+  using: 'node25'
   main: 'dist/index.js'

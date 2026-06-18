@@ -72,6 +72,18 @@ jobs:
         run: coverage part
         working-directory: '${{ inputs.base_path }}'
 
+      - name: List RSpec output files (debug)
+        if: always()
+        run: find '${{ inputs.base_path }}/tmp' -name 'rspec-results*' 2>/dev/null || echo 'No rspec-results files found'
+
+      - name: Upload RSpec test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rspec-json-${{ strategy.job-index }}
+          path: '${{ inputs.base_path }}/tmp/rspec-results*.json'
+          if-no-files-found: ignore
+
   targets:
     name: Targets
     runs-on: ubuntu-24.04
@@ -109,6 +121,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: [specs, targets]
+    if: always()
     steps:
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2
@@ -121,3 +134,21 @@ jobs:
       - name: Upload the code coverage report
         run: coverage merge
         working-directory: '${{ inputs.base_path }}'
+
+      - name: Download RSpec test results
+        if: always()
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rspec-json-*
+          path: rspec-json/
+
+      - name: Publish RSpec test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: RSpec Tests
+          path: rspec-json/**/*.json
+          reporter: rspec-json
+          list-tests: failed
+          fail-on-error: false

@@ -38,9 +38,12 @@ if [ -z "${2}" ]; then
   exit 1
 fi
 
-# Common settings
+# Common settings. We pass the token as password, because a token-only
+# username gets dropped when Github redirects the clone request, which
+# results in a "could not read Username" error. Github ignores the username.
+# See: https://github.com/Publikey/runqy-worker/pull/33
 APP="${1}"
-GIT_URL="https://${2}@github.com/hausgold/potpourri.git"
+GIT_URL="https://x-access-token:${2}@github.com/hausgold/potpourri.git"
 DEST='/opt/hausgold/potpourri'
 
 # Just clone and build it once and use the cache on subsequent calls

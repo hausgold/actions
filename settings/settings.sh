@@ -46,8 +46,11 @@ if [ -z "${SECRET_KEY}" ]; then
   exit 1
 fi
 
-# Common settings
-GIT_URL="https://${CLONE_TOKEN}@github.com/hausgold/settings.git"
+# Common settings. We pass the token as password, because a token-only
+# username gets dropped when Github redirects the clone request, which
+# results in a "could not read Username" error. Github ignores the username.
+# See: https://github.com/Publikey/runqy-worker/pull/33
+GIT_URL="https://x-access-token:${CLONE_TOKEN}@github.com/hausgold/settings.git"
 DEST="$(mktemp -d)"
 
 # Make sure to drop cloned settings in order to prevent unauthorized access to

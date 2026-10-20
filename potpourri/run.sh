@@ -3,16 +3,38 @@
 # $1 - the target script to run
 # $2 - Github token to use
 
-# Die on any errors
-set -e
+PROGNAME="$(basename "${0}")"
+
+# Die on any errors, and inherit the ERR trap into subshells
+set -eE
+
+# Report the failed command, its line and its exit code on stderr. The
+# wrapping action prints the collected stderr as warnings when we fail. We
+# print the unexpanded source text of the command, so no secrets end up in
+# the log. Failed subshell groups are skipped, because their failed inner
+# command was already reported.
+#
+# $1 - the line number of the failed command
+function report-failure()
+{
+  local code="${?}"
+
+  if [[ "${BASH_COMMAND}" =~ ^\( ]]; then
+    return
+  fi
+
+  >&2 echo "${PROGNAME}: line ${1}: \`${BASH_COMMAND}\`" \
+    "failed with exit code ${code}"
+}
+trap 'report-failure "${LINENO}"' ERR
 
 if [ -z "${1}" ]; then
-  echo 'Execution target ($1) is missing.'
+  >&2 echo 'Execution target ($1) is missing.'
   exit 1
 fi
 
 if [ -z "${2}" ]; then
-  echo 'Github clone token ($1) is missing.'
+  >&2 echo 'Github clone token ($2) is missing.'
   exit 1
 fi
 
@@ -38,7 +60,7 @@ if [ ! -d "${DEST}" ]; then
 
     # Run the export environment variable helper to export the settings
     make -C "${DEST}" --no-print-directory build-actions
-  ) &> /dev/null
+  ) > /dev/null
 else
   # We're running on a cached version of Potpourri, so we should check for
   # updates and where there are some, we rebuild the scripts accordingly

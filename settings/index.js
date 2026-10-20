@@ -6,6 +6,10 @@ const app = core.getInput('app', { required: true }).split('/').slice(-1)[0];
 const token = core.getInput('clone_token', { required: true });
 const secret_key = core.getInput('secret_key', { required: true });
 
+// Mask the clone token, because it is part of the clone URL which shows up
+// in git error messages
+core.setSecret(token);
+
 const filterList = [
   'API_KEY', 'CREDENTIAL', 'ENCRYPTION', 'ghp_', 'PASSWORD',
   'PRIVATE', 'SECRET', 'TOKEN', 'CERTIFICATE', 'SLACK_.*_CHANNEL',

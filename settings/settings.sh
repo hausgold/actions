@@ -4,23 +4,45 @@
 #
 # The +CLONE_TOKEN+ and +SECRET_KEY+ environment variables must be present.
 
-# Die on any errors
-set -e
+PROGNAME="$(basename "${0}")"
+
+# Die on any errors, and inherit the ERR trap into subshells
+set -eE
+
+# Report the failed command, its line and its exit code on stderr. The
+# wrapping action prints the collected stderr as warnings when we fail. We
+# print the unexpanded source text of the command, so no secrets end up in
+# the log. Failed subshell groups are skipped, because their failed inner
+# command was already reported.
+#
+# $1 - the line number of the failed command
+function report-failure()
+{
+  local code="${?}"
+
+  if [[ "${BASH_COMMAND}" =~ ^\( ]]; then
+    return
+  fi
+
+  >&2 echo "${PROGNAME}: line ${1}: \`${BASH_COMMAND}\`" \
+    "failed with exit code ${code}"
+}
+trap 'report-failure "${LINENO}"' ERR
 
 if [ -z "${1}" ]; then
-  echo 'Application name ($1) is missing.'
+  >&2 echo 'Application name ($1) is missing.'
   exit 1
 else
   APP="${1}"
 fi
 
 if [ -z "${CLONE_TOKEN}" ]; then
-  echo 'The `CLONE_TOKEN` environment variable is missing.'
+  >&2 echo 'The `CLONE_TOKEN` environment variable is missing.'
   exit 1
 fi
 
 if [ -z "${SECRET_KEY}" ]; then
-  echo 'The `SECRET_KEY` environment variable is missing.'
+  >&2 echo 'The `SECRET_KEY` environment variable is missing.'
   exit 1
 fi
 
@@ -55,7 +77,7 @@ trap cleanup EXIT
 /Makefile
 EOF
   git -C "${DEST}" checkout master
-) &> /dev/null
+) > /dev/null
 
 # Install the machine user SSH key for further organization access
 (
@@ -78,7 +100,7 @@ EOF
   cat >>${HOME}/.ssh/setup <<EOF
 ssh-add ~/.ssh/id_rsa
 EOF
-) &> /dev/null
+) > /dev/null
 
 # Run the export environment variable helper to export the settings
 APP_RECIPE="export-envs-$(${DEST}/exe/files-to-recipes <<< "${APP}")"

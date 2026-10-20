@@ -768,7 +768,7 @@ class Summary {
     /**
      * If the summary buffer is empty
      *
-     * @returns {boolean} true if the buffer is empty
+     * @returns {boolen} true if the buffer is empty
      */
     isEmptyBuffer() {
         return this._buffer.length === 0;
@@ -857,10 +857,10 @@ class Summary {
         return this.addRaw(element).addEOL();
     }
     /**
-     * Adds a collapsible HTML details element to the summary buffer
+     * Adds a collapsable HTML details element to the summary buffer
      *
      * @param {string} label text for the closed state
-     * @param {string} content collapsible content
+     * @param {string} content collapsable content
      *
      * @returns {Summary} summary instance
      */
@@ -3631,7 +3631,7 @@ class Summary {
     /**
      * If the summary buffer is empty
      *
-     * @returns {boolean} true if the buffer is empty
+     * @returns {boolen} true if the buffer is empty
      */
     isEmptyBuffer() {
         return this._buffer.length === 0;
@@ -3720,10 +3720,10 @@ class Summary {
         return this.addRaw(element).addEOL();
     }
     /**
-     * Adds a collapsible HTML details element to the summary buffer
+     * Adds a collapsable HTML details element to the summary buffer
      *
      * @param {string} label text for the closed state
-     * @param {string} content collapsible content
+     * @param {string} content collapsable content
      *
      * @returns {Summary} summary instance
      */
@@ -6950,6 +6950,10 @@ const exec = __nccwpck_require__(514);
 
 const target = core.getInput('target', { required: true });
 const token = core.getInput('clone_token', { required: true });
+
+// Mask the clone token, because it is part of the clone URL which shows up
+// in git error messages
+core.setSecret(token);
 
 let stderr = '';
 

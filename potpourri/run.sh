@@ -39,6 +39,14 @@ if [ -z "${2:-}" ]; then
   exit 1
 fi
 
+# The Potpourri branch or tag to run, master unless the caller says
+# otherwise. The value lands in git arguments, so git checks its shape.
+REF="${POTPOURRI_REF:-master}"
+if ! git check-ref-format --branch "${REF}" >/dev/null 2>&1; then
+  >&2 echo "The Potpourri ref '${REF}' is not a valid ref name."
+  exit 1
+fi
+
 # Common settings. We pass the token as password, because a token-only
 # username gets dropped when Github redirects the clone request, which
 # results in a "could not read Username" error. Github ignores the username.
@@ -57,10 +65,10 @@ if [ ! -d "${DEST}" ]; then
       --no-checkout \
       --depth=1 \
       --filter=blob:none \
-      --branch master \
+      --branch "${REF}" \
       --single-branch \
       "${GIT_URL}" "${DEST}"
-    git -C "${DEST}" checkout master
+    git -C "${DEST}" checkout "${REF}"
 
     # Run the export environment variable helper to export the settings
     make -C "${DEST}" --no-print-directory build-actions

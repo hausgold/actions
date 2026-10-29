@@ -37,6 +37,12 @@ on:
         required: false
         default: 15
         type: number
+      dependency_track:
+        description: Whether to upload the SBOM of the built image to
+          Dependency-Track
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   package:
@@ -77,3 +83,7 @@ jobs:
         if: inputs.publish_prebuilt == true
         run: make publish-prebuilt
         working-directory: '${{ inputs.base_path }}'
+
+      - name: Upload the SBOM of the container image to Dependency-Track
+        if: inputs.dependency_track == true
+        run: dependency-track upload-image "${AWS_ECR_REPO}${GITHUB_REPO}:${IMAGE_REF}"

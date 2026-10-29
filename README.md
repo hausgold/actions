@@ -37,7 +37,7 @@ steps:
 ## Standalone Actions
 
 Most commonly on Github Actions is the usage of standalone actions which are
-performed on after another while having the user the configure each step, even
+performed one after another while the user has to configure each step, even
 on multiple jobs.
 
 ### Fetch application settings
@@ -45,7 +45,7 @@ on multiple jobs.
 This action allows you to fetch the application settings from our
 [Settings](https://github.com/hausgold/settings) repository by specifying the
 application name and the Github clone token. Make sure your application
-repository have set the `CLONE_TOKEN` secret correctly. Afterwards you
+repository has set the `CLONE_TOKEN` secret correctly. Afterwards you
 can access all settings via regular environment variables.
 
 ```yaml
@@ -66,7 +66,7 @@ fetch and build the Potpourri repository (5s) and run the desired script. See
 the [Potpourri documentation](https://github.com/hausgold/potpourri) for
 further details and a full list of supported targets.
 
-```
+```yaml
 steps:
   - name: Prepare the virtual environment
     uses: hausgold/actions/potpourri@v2

@@ -17,17 +17,17 @@ on:
         default: config/container
         type: string
       publish:
-        description: Whenever to publish the image (AWS)
+        description: Whether to publish the image (AWS)
         required: false
         default: true
         type: boolean
       publish_prebuilt:
-        description: Whenever to publish a prebuilt image (Docker Hub)
+        description: Whether to publish a prebuilt image (Docker Hub)
         required: false
         default: true
         type: boolean
-      timeout-minutes:
-        description: The maximum of time the package job may run
+      timeout_minutes:
+        description: Maximum time in minutes the workflow is allowed to run
         required: false
         default: 15
         type: number
@@ -36,7 +36,7 @@ jobs:
   package:
     name: Container Image
     runs-on: ubuntu-24.04
-    timeout-minutes: '${{ inputs.timeout-minutes }}'
+    timeout-minutes: '${{ inputs.timeout_minutes }}'
     steps:
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2

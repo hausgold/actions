@@ -31,10 +31,14 @@ jobs:
           settings: '${{ github.repository }}'
           target: '${{ inputs.potpourri_target }}'
 
+      # The branch name is user controlled, so we pass it via the environment
+      # instead of interpolating it into the shell script
       - name: Reconfigure the pull request/branch details
         run:
-          var GITHUB_BRANCH '${{ github.head_ref }}';
+          var GITHUB_BRANCH "${HEAD_REF}";
           var GITHUB_PULL_REQUEST '${{ github.event.number }}'
+        env:
+          HEAD_REF: '${{ github.head_ref }}'
 
       - name: Remove the Github Deployment of the feature branch
         run: deployment --remove

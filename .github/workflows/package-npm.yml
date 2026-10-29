@@ -14,7 +14,7 @@ on:
         default: .
         type: string
       publish:
-        description: Whenever to publish the package
+        description: Whether to publish the package
         required: false
         default: true
         type: boolean

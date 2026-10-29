@@ -1,12 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # $1 - the target script to run
 # $2 - Github token to use
 
 PROGNAME="$(basename "${0}")"
 
-# Die on any errors, and inherit the ERR trap into subshells
-set -eE
+# Die on any errors, unset variables and failed pipeline members,
+# and inherit the ERR trap into subshells
+set -eEuo pipefail
 
 # Report the failed command, its line and its exit code on stderr. The
 # wrapping action prints the collected stderr as warnings when we fail. We
@@ -28,12 +29,12 @@ function report-failure()
 }
 trap 'report-failure "${LINENO}"' ERR
 
-if [ -z "${1}" ]; then
+if [ -z "${1:-}" ]; then
   >&2 echo 'Execution target ($1) is missing.'
   exit 1
 fi
 
-if [ -z "${2}" ]; then
+if [ -z "${2:-}" ]; then
   >&2 echo 'Github clone token ($2) is missing.'
   exit 1
 fi
@@ -65,16 +66,16 @@ if [ ! -d "${DEST}" ]; then
     make -C "${DEST}" --no-print-directory build-actions
   ) > /dev/null
 else
-  # We're running on a cached version of Potpourri, so we should check for
-  # updates and where there are some, we rebuild the scripts accordingly
-  mkdir -p "${DEST}/hooks"
-  cat >"${DEST}/hooks/post-update" <<EOF
-#!/bin/bash
-echo 'Rebuild the potpourri cache after update..'
-make build-actions
-EOF
-  chmod +x "${DEST}/hooks/post-update"
+  # We're running on a cached version of Potpourri, so we check for updates
+  # and rebuild the scripts when the pull brought new commits, because the
+  # built scripts would otherwise be stale
+  BEFORE="$(git -C "${DEST}" rev-parse HEAD)"
   git -C "${DEST}" pull
+
+  if [ "${BEFORE}" != "$(git -C "${DEST}" rev-parse HEAD)" ]; then
+    echo 'Rebuild the potpourri cache after update..'
+    make -C "${DEST}" --no-print-directory build-actions > /dev/null
+  fi
 fi
 
 # Run the Github Actions pre-prepare script

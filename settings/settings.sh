@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # $1 - application name
 #
@@ -6,8 +6,9 @@
 
 PROGNAME="$(basename "${0}")"
 
-# Die on any errors, and inherit the ERR trap into subshells
-set -eE
+# Die on any errors, unset variables and failed pipeline members,
+# and inherit the ERR trap into subshells
+set -eEuo pipefail
 
 # Report the failed command, its line and its exit code on stderr. The
 # wrapping action prints the collected stderr as warnings when we fail. We
@@ -29,19 +30,19 @@ function report-failure()
 }
 trap 'report-failure "${LINENO}"' ERR
 
-if [ -z "${1}" ]; then
+if [ -z "${1:-}" ]; then
   >&2 echo 'Application name ($1) is missing.'
   exit 1
 else
   APP="${1}"
 fi
 
-if [ -z "${CLONE_TOKEN}" ]; then
+if [ -z "${CLONE_TOKEN:-}" ]; then
   >&2 echo 'The `CLONE_TOKEN` environment variable is missing.'
   exit 1
 fi
 
-if [ -z "${SECRET_KEY}" ]; then
+if [ -z "${SECRET_KEY:-}" ]; then
   >&2 echo 'The `SECRET_KEY` environment variable is missing.'
   exit 1
 fi
@@ -92,24 +93,35 @@ EOF
       .decrypt-users-deployhausgold-id-rsa \
       .decrypt-users-deployhausgold-id-rsa-pub
 
-  mkdir -p ${HOME}/.ssh
-  cp "${DEST}/users/deployhausgold"/id* ${HOME}/.ssh/
-  chmod 0600 ${HOME}/.ssh/id_rsa
-  chmod 0644 ${HOME}/.ssh/id_rsa.pub
-  cat >>${HOME}/.ssh/config <<EOF
+  mkdir -p "${HOME}/.ssh"
+  cp "${DEST}/users/deployhausgold"/id* "${HOME}/.ssh/"
+  chmod 0600 "${HOME}/.ssh/id_rsa"
+  chmod 0644 "${HOME}/.ssh/id_rsa.pub"
+  # Append the entries only once, because the settings action may run
+  # multiple times within the same job
+  grep -qsF 'Host github.com' "${HOME}/.ssh/config" \
+    || cat >>"${HOME}/.ssh/config" <<EOF
 Host github.com
   StrictHostKeyChecking no
 EOF
-  cat >>${HOME}/.ssh/setup <<EOF
+  grep -qsF 'ssh-add ~/.ssh/id_rsa' "${HOME}/.ssh/setup" \
+    || cat >>"${HOME}/.ssh/setup" <<EOF
 ssh-add ~/.ssh/id_rsa
 EOF
 ) > /dev/null
 
+# Collect the export recipes to run. Not every application has a settings
+# counterpart, so we only add the application recipe when GNU Make knows it
+# (checked with a dry run), otherwise it fails on the missing target.
+RECIPES=(export-envs-github-actions-commons)
+APP_RECIPE="export-envs-$("${DEST}/exe/files-to-recipes" <<< "${APP}")"
+if SETTINGS_SECRET_KEY="${SECRET_KEY}" \
+  make -C "${DEST}" --no-print-directory -n "${APP_RECIPE}" &> /dev/null; then
+  RECIPES+=("${APP_RECIPE}")
+fi
+
 # Run the export environment variable helper to export the settings
-APP_RECIPE="export-envs-$(${DEST}/exe/files-to-recipes <<< "${APP}")"
 SETTINGS_SECRET_KEY="${SECRET_KEY}" \
-  make -C "${DEST}" --no-print-directory \
-    export-envs-github-actions-commons \
-    "${APP_RECIPE}" \
-      | cut -d' ' -f2- \
-      | sort -u
+  make -C "${DEST}" --no-print-directory "${RECIPES[@]}" \
+    | cut -d' ' -f2- \
+    | sort -u

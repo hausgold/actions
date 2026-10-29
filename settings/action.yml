@@ -8,8 +8,8 @@ inputs:
     description: The Github token to use for cloning
     required: true
   secret_key:
-    description: We require the settings secret key for decryption
-    required: false
+    description: The settings secret key for decryption
+    required: true
 branding:
   icon: 'lock'
   color: 'green'

@@ -1,4 +1,4 @@
-name: Application Tests in a single job
+name: Application Tests in parallel jobs
 
 on:
   workflow_call:
@@ -87,7 +87,7 @@ jobs:
           clone_token: '${{ secrets.CLONE_TOKEN }}'
           settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
           settings: '${{ github.repository }}'
-          target: ci/docker-app
+          target: '${{ inputs.potpourri_target }}'
 
       - name: Setup the application
         run: make '${{ inputs.setup_target }}'
@@ -98,6 +98,11 @@ jobs:
           | sed -e 's/^/test-/g' -e 's/,/ test-/g' -e 's/test-test/test/g')
         working-directory: '${{ inputs.base_path }}'
 
+      # This step deliberately stays in the matrix job, so the docs may be
+      # built and uploaded once per matrix entry. Moving it to the finalize
+      # job would require to provision and install the whole application
+      # there again, which is much slower and more expensive than the
+      # idempotent duplicate upload
       - name: Build and upload application documentation
         run: api-docs --skip-upload && coverage --docs-only
         if: github.ref == 'refs/heads/master'

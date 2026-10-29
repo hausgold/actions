@@ -9,14 +9,16 @@ SHELL := bash
 # Host Binaries
 CD ?= cd
 NPM ?= npm
+RM ?= rm
 
-# Dynamic recipe names
-NON_ACTIONS ?= doc
+# Dynamic recipe names (the shared library is no action on its own, but
+# it is part of all per-package recipes)
+NON_ACTIONS ?= doc lib
 ACTIONS ?= $(filter-out $(NON_ACTIONS),$(patsubst %/,%,\
 	$(patsubst ./%,%,$(sort $(dir $(wildcard ./*/*))))))
-ALL_ACTIONS ?= $(ACTIONS) lib
-INSTALL_ACTIONS := $(ACTIONS:%=install-%)
-BUILD_ACTIONS := $(ACTIONS:%=build-%)
+ALL_ACTIONS ?= lib $(ACTIONS)
+INSTALL_ACTIONS := $(ALL_ACTIONS:%=install-%)
+BUILD_ACTIONS := $(ALL_ACTIONS:%=build-%)
 CLEAN_ACTIONS := $(ALL_ACTIONS:%=clean-%)
 UPDATE_ACTIONS := $(ALL_ACTIONS:%=update-%)
 
@@ -33,8 +35,11 @@ $(INSTALL_ACTIONS):
 	@$(MAKE) -C $(ACTION) install
 
 $(BUILD_ACTIONS): ACTION = $(@:build-%=%)
-$(BUILD_ACTIONS): build-lib
+$(BUILD_ACTIONS):
 	@$(MAKE) -C $(ACTION) build
+
+# The actions bundle the shared library, so it must be built first
+$(ACTIONS:%=build-%): build-lib
 
 $(CLEAN_ACTIONS): ACTION = $(@:clean-%=%)
 $(CLEAN_ACTIONS):

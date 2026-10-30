@@ -77,3 +77,10 @@ jobs:
 
       - name: Create a Github Deployment
         run: deployment
+
+      # The deployment is complete at this point; a failed upload shows as a
+      # warning on the job and changes nothing about the deployment
+      - name: Upload the SBOM of the deployed bundle
+        run: dependency-track upload-bundle
+        working-directory: '${{ inputs.base_path }}'
+        continue-on-error: true

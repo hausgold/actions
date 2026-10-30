@@ -58,6 +58,16 @@ jobs:
         run: coverage
         working-directory: '${{ inputs.base_path }}'
 
+      - name: Publish RSpec test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: RSpec Tests
+          path: '${{ inputs.base_path }}/tmp/rspec-results*.json'
+          reporter: rspec-json
+          list-tests: failed
+          fail-on-error: false
+
       - name: Build and upload application documentation
         run: api-docs --skip-upload && coverage --docs-only
         if: github.ref == 'refs/heads/master'

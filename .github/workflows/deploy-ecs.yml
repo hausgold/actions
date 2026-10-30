@@ -8,6 +8,12 @@ on:
         required: false
         default: ci/docker-app
         type: string
+      potpourri_ref:
+        description: The Potpourri branch or tag to run the targets from, a
+          testing knob for a feature branch, refused on the default branch
+        required: false
+        default: master
+        type: string
       base_path:
         description: The path to run all commands in, relative to the
           repository root
@@ -36,8 +42,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: '${{ inputs.timeout_minutes }}'
     steps:
+      - name: Refuse a Potpourri branch on the default branch
+        if: inputs.potpourri_ref != 'master' && github.ref_name == github.event.repository.default_branch
+        run: |
+          echo "::error::potpourri_ref is a testing knob, the default branch runs master"
+          exit 1
+
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2
+        env:
+          POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
         with:
           clone_token: '${{ secrets.CLONE_TOKEN }}'
           settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'

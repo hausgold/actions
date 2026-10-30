@@ -1,0 +1,60 @@
+name: SBOM
+
+# Upload the SBOMs of a build to Dependency-Track: the container image the
+# package workflow pushed, and the repository at the built commit. syft
+# unpacks every layer of the image, which needs more room than the runner
+# has left after the build, so this runs on a runner of its own and reads
+# the image back from a registry. The caller runs it as a job after the
+# package job, next to the deployment, so a failed upload holds no
+# deployment back.
+
+on:
+  workflow_call:
+    inputs:
+      potpourri_target:
+        description: The Potpourri target to run
+        required: false
+        default: ci/docker-app
+        type: string
+      potpourri_ref:
+        description: The Potpourri branch or tag to run the targets from, a
+          testing knob for a feature branch, refused on the default branch
+        required: false
+        default: master
+        type: string
+      timeout_minutes:
+        description: Maximum time in minutes the workflow is allowed to run
+        required: false
+        default: 15
+        type: number
+
+jobs:
+  sbom:
+    name: Upload
+    runs-on: ubuntu-24.04
+    timeout-minutes: '${{ inputs.timeout_minutes }}'
+    steps:
+      - name: Refuse a Potpourri branch on the default branch
+        if: inputs.potpourri_ref != 'master' && github.ref_name == github.event.repository.default_branch
+        run: |
+          echo "::error::potpourri_ref is a testing knob, the default branch runs master"
+          exit 1
+
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        env:
+          POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: '${{ inputs.potpourri_target }}'
+
+      # The helper reads the prebuilt image from Docker Hub when it holds the
+      # same manifest as the pushed tag, because the pull from there is free
+      # of charge, and from ECR otherwise
+      - name: Upload the SBOM of the container image
+        run: dependency-track upload-image
+
+      - name: Upload the SBOM of the repository
+        run: dependency-track upload-source

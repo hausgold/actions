@@ -8,6 +8,12 @@ on:
         required: false
         default: ci/docker-app
         type: string
+      potpourri_ref:
+        description: The Potpourri branch or tag to run the targets from, a
+          testing knob for a feature branch, refused on the default branch
+        required: false
+        default: master
+        type: string
       base_path:
         description: The path to run all commands in, relative to the
           repository root
@@ -36,8 +42,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: '${{ inputs.timeout_minutes }}'
     steps:
+      - name: Refuse a Potpourri branch on the default branch
+        if: inputs.potpourri_ref != 'master' && github.ref_name == github.event.repository.default_branch
+        run: |
+          echo "::error::potpourri_ref is a testing knob, the default branch runs master"
+          exit 1
+
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2
+        env:
+          POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
         with:
           clone_token: '${{ secrets.CLONE_TOKEN }}'
           settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
@@ -63,6 +77,15 @@ jobs:
         run: ecs-deployment clean
         working-directory: '${{ inputs.base_path }}'
         if: env.DEPLOY_ENV == 'production'
+
+      # The helper reads the image SBOM the sbom job of the build uploads,
+      # and that job runs next to the canary deployment, so the helper
+      # waits for it. The job succeeds when this step fails: the
+      # deployment is complete by then.
+      - name: Upload the SBOM of the deployment
+        run: dependency-track upload-deployment
+        working-directory: '${{ inputs.base_path }}'
+        continue-on-error: true
 
       - name: Restore deploy environment
         run: var DEPLOY_ENV ${ORIG_DEPLOY_ENV}

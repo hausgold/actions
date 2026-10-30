@@ -37,12 +37,6 @@ on:
         required: false
         default: 15
         type: number
-      dependency_track:
-        description: Whether to upload the SBOM of the built image to
-          Dependency-Track
-        required: false
-        default: false
-        type: boolean
 
 jobs:
   package:
@@ -84,29 +78,3 @@ jobs:
         run: make publish-prebuilt
         working-directory: '${{ inputs.base_path }}'
 
-  # syft unpacks every layer of the image, which needs more room than the
-  # runner has left after the build, so the scan runs on a runner of its own
-  # and reads the pushed image back from a registry
-  sbom:
-    name: SBOM
-    needs: package
-    if: inputs.dependency_track == true && inputs.publish == true
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - name: Prepare the environment
-        uses: hausgold/actions/ci@v2
-        env:
-          POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
-        with:
-          clone_token: '${{ secrets.CLONE_TOKEN }}'
-          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
-          settings: '${{ github.repository }}'
-          target: '${{ inputs.potpourri_target }}'
-
-      - name: Upload the SBOM of the container image to Dependency-Track
-        env:
-          MIRROR: ${{ inputs.publish_prebuilt == true && format('hausgold/app:{0}', github.event.repository.name) || '' }}
-        run: |
-          dependency-track upload-image \
-            "${AWS_ECR_REPO}${GITHUB_REPO}:${IMAGE_REF}" "${MIRROR}"

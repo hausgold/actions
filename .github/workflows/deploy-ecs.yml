@@ -64,6 +64,15 @@ jobs:
         working-directory: '${{ inputs.base_path }}'
         if: env.DEPLOY_ENV == 'production'
 
+      # The helper reads the image SBOM the sbom job of the build uploads,
+      # and that job runs next to the canary deployment, so the helper
+      # waits for it. The job succeeds when this step fails: the
+      # deployment is complete by then.
+      - name: Upload the SBOM of the deployment
+        run: dependency-track upload-deployment
+        working-directory: '${{ inputs.base_path }}'
+        continue-on-error: true
+
       - name: Restore deploy environment
         run: var DEPLOY_ENV ${ORIG_DEPLOY_ENV}
         if: inputs.force_env != null

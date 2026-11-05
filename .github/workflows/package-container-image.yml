@@ -22,6 +22,13 @@ on:
         required: false
         default: config/container
         type: string
+      warm:
+        description: Whether to warm up the built image before testing and
+          publishing it (compiled assets and caches as an extra image layer,
+          needs the shared application image)
+        required: false
+        default: false
+        type: boolean
       publish:
         description: Whether to publish the image (AWS)
         required: false
@@ -68,6 +75,11 @@ jobs:
 
       - name: Build the container image
         run: make build
+        working-directory: '${{ inputs.base_path }}'
+
+      - name: Warm up the container image
+        if: inputs.warm == true
+        run: make warm
         working-directory: '${{ inputs.base_path }}'
 
       - name: Run the container image test suite

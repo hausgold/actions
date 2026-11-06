@@ -36,12 +36,21 @@ on:
         required: false
         default: true
         type: boolean
+      sbom:
+        description: Whether to record the completed deployment in
+          Dependency-Track, in a job after it
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   deploy:
     name: ECS
     runs-on: ubuntu-24.04
     timeout-minutes: '${{ inputs.timeout_minutes }}'
+    outputs:
+      # Written by Potpourri's ecs-deployment deploy
+      ecs_task_definition: '${{ steps.deploy.outputs.ecs_task_definition }}'
     env:
       POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
     steps:
@@ -68,6 +77,7 @@ jobs:
         if: inputs.force_env != null
 
       - name: Deploy the application
+        id: deploy
         run: ecs-deployment deploy
         working-directory: '${{ inputs.base_path }}'
 
@@ -96,3 +106,43 @@ jobs:
         if: inputs.build_docs == true && env.DEPLOY_ENV == 'production'
         env:
           WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'
+
+  # Records the deployment in Dependency-Track. A failed upload fails this
+  # job and leaves the deployment as it is; the other uploads still run.
+  sbom:
+    name: SBOM
+    needs: deploy
+    if: inputs.sbom
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: '${{ inputs.potpourri_target }}'
+
+      - name: Upload the image SBOM
+        run: dependency-track upload-image --summary "${GITHUB_STEP_SUMMARY}"
+        working-directory: '${{ inputs.base_path }}'
+        timeout-minutes: 10
+
+      - name: Upload the source SBOM
+        if: '!cancelled()'
+        run: dependency-track upload-source --summary "${GITHUB_STEP_SUMMARY}"
+        working-directory: '${{ inputs.base_path }}'
+        timeout-minutes: 5
+
+      - name: Upload the deployment SBOM
+        if: '!cancelled()'
+        run: dependency-track upload-deployment
+          --summary "${GITHUB_STEP_SUMMARY}"
+        working-directory: '${{ inputs.base_path }}'
+        timeout-minutes: 5
+        env:
+          DEPLOY_ENV: '${{ inputs.force_env || env.DEPLOY_ENV }}'
+          ECS_TASK_DEFINITION: '${{ needs.deploy.outputs.ecs_task_definition }}'

@@ -8,6 +8,13 @@ on:
         required: false
         default: ci/docker-app
         type: string
+      potpourri_ref:
+        description: Run every Potpourri helper of this job, the deployment
+          included, from this Potpourri branch. For testing from a branch of
+          the caller; refused on the default branch and on tags.
+        required: false
+        default: master
+        type: string
       base_path:
         description: The path to run all commands in, relative to the
           repository root
@@ -29,13 +36,29 @@ on:
         required: false
         default: true
         type: boolean
+      sbom:
+        description: Whether to record the deployed commit in
+          Dependency-Track, in a job after the deployment
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   deploy:
     name: EC2
     runs-on: ubuntu-24.04
     timeout-minutes: '${{ inputs.timeout_minutes }}'
+    env:
+      POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
     steps:
+      - name: Refuse a Potpourri branch on the default branch or a tag
+        if: inputs.potpourri_ref != 'master' &&
+          (github.ref_name == github.event.repository.default_branch ||
+          github.ref_type == 'tag')
+        run: |
+          echo "::error::potpourri_ref is for testing from a branch, the default branch and tags run Potpourri master"
+          exit 1
+
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2
         with:
@@ -74,3 +97,27 @@ jobs:
         if: inputs.build_docs == true && env.DEPLOY_ENV == 'production'
         env:
           WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'
+
+  # Records the deployed commit in Dependency-Track. A failed upload fails
+  # this job and leaves the deployment as it is.
+  sbom:
+    name: SBOM
+    needs: deploy
+    if: inputs.sbom
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: '${{ inputs.potpourri_target }}'
+
+      - name: Upload the source SBOM
+        run: dependency-track upload-source --summary "${GITHUB_STEP_SUMMARY}"
+        working-directory: '${{ inputs.base_path }}'
+        timeout-minutes: 5

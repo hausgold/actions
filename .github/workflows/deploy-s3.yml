@@ -37,12 +37,22 @@ on:
         required: false
         default: 20
         type: number
+      sbom:
+        description: Whether to record the completed deployment in
+          Dependency-Track, in a job after it
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   deploy:
     name: S3
     runs-on: ubuntu-24.04
     timeout-minutes: '${{ inputs.timeout_minutes }}'
+    outputs:
+      # Written by Potpourri's s3-deployment deploy
+      s3_bucket: '${{ steps.deploy.outputs.s3_bucket }}'
+      dest_url: '${{ steps.deploy.outputs.dest_url }}'
     env:
       POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
     steps:
@@ -77,6 +87,7 @@ jobs:
         working-directory: '${{ inputs.base_path }}'
 
       - name: Deploy the application
+        id: deploy
         run: s3-deployment deploy
         working-directory: '${{ inputs.base_path }}'
 
@@ -94,3 +105,38 @@ jobs:
 
       - name: Create a Github Deployment
         run: deployment
+
+  # Records the deployment in Dependency-Track. A failed upload fails this
+  # job and leaves the deployment as it is; the other uploads still run.
+  sbom:
+    name: SBOM
+    needs: deploy
+    if: inputs.sbom
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: '${{ inputs.potpourri_target }}'
+
+      - name: Upload the source SBOM
+        run: dependency-track upload-source --summary "${GITHUB_STEP_SUMMARY}"
+        working-directory: '${{ inputs.base_path }}'
+        timeout-minutes: 5
+
+      - name: Upload the deployment SBOM
+        if: '!cancelled()'
+        run: dependency-track upload-deployment
+          --summary "${GITHUB_STEP_SUMMARY}"
+        working-directory: '${{ inputs.base_path }}'
+        timeout-minutes: 5
+        env:
+          DEPLOY_ENV: '${{ inputs.force_env || env.DEPLOY_ENV }}'
+          S3_BUCKET: '${{ needs.deploy.outputs.s3_bucket }}'
+          DEST_URL: '${{ needs.deploy.outputs.dest_url }}'

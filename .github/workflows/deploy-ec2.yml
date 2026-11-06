@@ -36,6 +36,12 @@ on:
         required: false
         default: true
         type: boolean
+      sbom:
+        description: Whether to record the deployed commit in
+          Dependency-Track, in a job after the deployment
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   deploy:
@@ -91,3 +97,27 @@ jobs:
         if: inputs.build_docs == true && env.DEPLOY_ENV == 'production'
         env:
           WORKFLOW_DISPATCH_TOKEN: '${{ secrets.WORKFLOW_DISPATCH_TOKEN }}'
+
+  # Records the deployed commit in Dependency-Track. A failed upload fails
+  # this job and leaves the deployment as it is.
+  sbom:
+    name: SBOM
+    needs: deploy
+    if: inputs.sbom
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
+    steps:
+      - name: Prepare the environment
+        uses: hausgold/actions/ci@v2
+        with:
+          clone_token: '${{ secrets.CLONE_TOKEN }}'
+          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
+          settings: '${{ github.repository }}'
+          target: '${{ inputs.potpourri_target }}'
+
+      - name: Upload the source SBOM
+        run: dependency-track upload-source --summary "${GITHUB_STEP_SUMMARY}"
+        working-directory: '${{ inputs.base_path }}'
+        timeout-minutes: 5

@@ -9,8 +9,9 @@ on:
         default: ci/docker-app
         type: string
       potpourri_ref:
-        description: The Potpourri branch or tag to run the targets from, a
-          testing knob for a feature branch, refused on the default branch
+        description: Run every Potpourri helper of this job, the image build
+          included, from this Potpourri branch. For testing from a branch of
+          the caller; refused on the default branch and on tags.
         required: false
         default: master
         type: string
@@ -44,29 +45,25 @@ on:
         required: false
         default: 15
         type: number
-      dependency_track:
-        description: Whether to upload the SBOM of the built image to
-          Dependency-Track
-        required: false
-        default: false
-        type: boolean
 
 jobs:
   package:
     name: Container Image
     runs-on: ubuntu-24.04
     timeout-minutes: '${{ inputs.timeout_minutes }}'
+    env:
+      POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
     steps:
-      - name: Refuse a Potpourri branch on the default branch
-        if: inputs.potpourri_ref != 'master' && github.ref_name == github.event.repository.default_branch
+      - name: Refuse a Potpourri branch on the default branch or a tag
+        if: inputs.potpourri_ref != 'master' &&
+          (github.ref_name == github.event.repository.default_branch ||
+          github.ref_type == 'tag')
         run: |
-          echo "::error::potpourri_ref is a testing knob, the default branch runs master"
+          echo "::error::potpourri_ref is for testing from a branch, the default branch and tags run Potpourri master"
           exit 1
 
       - name: Prepare the environment
         uses: hausgold/actions/ci@v2
-        env:
-          POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
         with:
           clone_token: '${{ secrets.CLONE_TOKEN }}'
           settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
@@ -96,29 +93,3 @@ jobs:
         run: make publish-prebuilt
         working-directory: '${{ inputs.base_path }}'
 
-  # syft unpacks every layer of the image, which needs more room than the
-  # runner has left after the build, so the scan runs on a runner of its own
-  # and reads the pushed image back from a registry
-  sbom:
-    name: SBOM
-    needs: package
-    if: inputs.dependency_track == true && inputs.publish == true
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - name: Prepare the environment
-        uses: hausgold/actions/ci@v2
-        env:
-          POTPOURRI_REF: '${{ inputs.potpourri_ref }}'
-        with:
-          clone_token: '${{ secrets.CLONE_TOKEN }}'
-          settings_secret_key: '${{ secrets.SETTINGS_SECRET_KEY }}'
-          settings: '${{ github.repository }}'
-          target: '${{ inputs.potpourri_target }}'
-
-      - name: Upload the SBOM of the container image to Dependency-Track
-        env:
-          MIRROR: ${{ inputs.publish_prebuilt == true && format('hausgold/app:{0}', github.event.repository.name) || '' }}
-        run: |
-          dependency-track upload-image \
-            "${AWS_ECR_REPO}${GITHUB_REPO}:${IMAGE_REF}" "${MIRROR}"

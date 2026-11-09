@@ -40,7 +40,7 @@ on:
         description: Whether to record the deployed commit in
           Dependency-Track, in a job after the deployment
         required: false
-        default: false
+        default: true
         type: boolean
 
 jobs:

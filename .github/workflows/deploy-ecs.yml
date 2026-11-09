@@ -40,7 +40,7 @@ on:
         description: Whether to record the completed deployment in
           Dependency-Track, in a job after it
         required: false
-        default: false
+        default: true
         type: boolean
 
 jobs:
